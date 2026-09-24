@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="ksc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TheRealTournament 🏆</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap hidden">
+  <div class="login-card">
+    <h1>🏆 TheRealTournament</h1>
+    <p class="sub">Turnierplaner für den Schulsport 🎒⚽🏀🏐</p>
+    <input id="loginUser" placeholder="👤 Benutzername" autocomplete="username">
+    <input id="loginPw" type="password" placeholder="🔑 Passwort" autocomplete="current-password">
+    <button class="btn primary big" onclick="doLogin()">Anmelden 🚀</button>
+    <p id="loginErr" class="err"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+  <header class="topbar">
+    <div class="brand" onclick="showTab('turniere')">🏆 <span>TheRealTournament</span></div>
+    <nav>
+      <button class="tab active" data-tab="turniere" onclick="showTab('turniere')">🏆 Turniere</button>
+      <button class="tab" data-tab="teams" onclick="showTab('teams')">👥 Teams</button>
+      <button class="tab" data-tab="kalender" onclick="showTab('kalender')">📅 Kalender</button>
+      <button class="tab admin-only" data-tab="users" onclick="showTab('users')">⚙️ Benutzer</button>
+    </nav>
+    <div class="head-right">
+      <select id="themeSel" onchange="setTheme(this.value)" title="🎨 Design">
+        <option value="ksc">🏟️ Sportplatz</option>
+        <option value="sunset">🌅 Sunset</option>
+        <option value="wald">🌲 Wald</option>
+        <option value="night">🌙 Night</option>
+        <option value="pastell">🌸 Pastell</option>
+      </select>
+      <span id="meBadge" class="me"></span>
+      <button class="btn ghost" onclick="doLogout()">Abmelden 🚪</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- TURNIERE -->
+    <section id="tab-turniere" class="tabpane">
+      <div id="tList"></div>
+      <div id="tDetail" class="hidden"></div>
+    </section>
+
+    <!-- TEAMS -->
+    <section id="tab-teams" class="tabpane hidden">
+      <h2>👥 Teams & Klassen</h2>
+      <div class="card form-card" id="teamForm">
+        <h3>➕ Neues Team</h3>
+        <div class="grid5">
+          <input id="tName" placeholder="Name, z. B. Löwen 7a 🦁">
+          <input id="tKlasse" placeholder="Klasse, z. B. 7a">
+          <input id="tSport" placeholder="Sportart ⚽">
+          <input id="tEmoji" placeholder="Emoji 🦅" maxlength="4">
+          <input id="tColor" type="color" value="#2563eb" title="Team-Farbe">
+        </div>
+        <button class="btn primary" onclick="addTeam()">Team anlegen ✅</button>
+      </div>
+      <div id="teamList" class="cards"></div>
+    </section>
+
+    <!-- KALENDER -->
+    <section id="tab-kalender" class="tabpane hidden">
+      <h2>📅 Kalender & Termine</h2>
+      <div id="calList"></div>
+    </section>
+
+    <!-- BENUTZER -->
+    <section id="tab-users" class="tabpane hidden">
+      <h2>⚙️ Benutzerverwaltung</h2>
+      <p class="hint">Rollen: <b>admin</b> 👑 (alles) · <b>lehrer</b> 🧑‍🏫 (Turniere & Ergebnisse) · <b>leser</b> 👀 (nur Ansicht)</p>
+      <div class="card form-card">
+        <h3>➕ Neuer Benutzer</h3>
+        <div class="grid4">
+          <input id="uName" placeholder="Benutzername">
+          <input id="uDisp" placeholder="Anzeigename 😀">
+          <input id="uPw" type="password" placeholder="Passwort">
+          <select id="uRole"><option value="leser">👀 leser</option><option value="lehrer">🧑‍🏫 lehrer</option><option value="admin">👑 admin</option></select>
+        </div>
+        <button class="btn primary" onclick="addUser()">Anlegen ✅</button>
+      </div>
+      <div id="userList" class="cards"></div>
+    </section>
+  </main>
+
+  <footer>🏆 TheRealTournament · selbstgehostet · <span id="year"></span></footer>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
