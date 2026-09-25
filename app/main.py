@@ -7,8 +7,8 @@ import secrets
 import sqlite3
 from datetime import datetime
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
-from fastapi.responses import Response, StreamingResponse
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -310,7 +310,7 @@ def latin1(s):
 # --- END PURE LOGIC ---
 
 
-app = FastAPI(title="TheRealTournament 🏆", version="1.0.0")
+app = FastAPI(title="TheRealTournament 🏆", version="1.1.0")
 
 
 def create_user(con, username, pw, role, display_name=""):
@@ -323,6 +323,9 @@ def create_user(con, username, pw, role, display_name=""):
 def init_db():
     con = db()
     con.executescript(SCHEMA)
+    cols = [r[1] for r in con.execute("PRAGMA table_info(tournaments)")]
+    if "public_token" not in cols:
+        con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
     if not con.execute("SELECT 1 FROM users").fetchone():
         create_user(con, ADMIN_USER, ADMIN_PASSWORD, "admin", "Admin 👑")
         if SEED_DEMO:
@@ -879,6 +882,72 @@ def export_pdf(tid: int, u=Depends(current_user)):
     fname = re.sub(r"[^\w-]+", "_", t["name"]) + ".pdf"
     return StreamingResponse(buf, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{fname}"'})
+
+
+# ---------- Öffentliche Live-Ansicht (ohne Login) ----------
+@app.post("/api/tournaments/{tid}/public")
+def enable_public(tid: int, u=Depends(need("admin", "lehrer"))):
+    token = secrets.token_urlsafe(8)
+    con = db()
+    con.execute("UPDATE tournaments SET public_token=? WHERE id=?", (token, tid))
+    con.commit()
+    con.close()
+    return {"token": token, "path": f"/p/{token}"}
+
+
+@app.delete("/api/tournaments/{tid}/public")
+def disable_public(tid: int, u=Depends(need("admin", "lehrer"))):
+    con = db()
+    con.execute("UPDATE tournaments SET public_token='' WHERE id=?", (tid,))
+    con.commit()
+    con.close()
+    return {"ok": True}
+
+
+@app.get("/api/public/{token}")
+def public_data(token: str):
+    con = db()
+    t = con.execute(
+        "SELECT * FROM tournaments WHERE public_token=? AND public_token!=''", (token,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht (mehr) öffentlich 🔒")
+    matches = [dict(r) for r in con.execute(
+        "SELECT m.*, h.name home_name, h.emoji home_emoji, h.color home_color, h.logo home_logo,"
+        " a.name away_name, a.emoji away_emoji, a.color away_color, a.logo away_logo"
+        " FROM matches m LEFT JOIN teams h ON h.id=m.home_id"
+        " LEFT JOIN teams a ON a.id=m.away_id"
+        " WHERE m.tournament_id=? ORDER BY m.group_name, m.r_idx, m.id", (t["id"],))]
+    standings = compute_standings(con, t["id"])
+    champ = None
+    fin = con.execute(
+        "SELECT * FROM matches WHERE tournament_id=? AND group_name IS NULL AND round_name LIKE 'Finale%'",
+        (t["id"],)).fetchone()
+    wid = winner_of(fin) if fin else None
+    if wid:
+        row = con.execute(
+            "SELECT id,name,emoji,color,klasse FROM teams WHERE id=?", (wid,)).fetchone()
+        champ = dict(row) if row else None
+    con.close()
+    return {"tournament": {k: t[k] for k in ("id", "name", "sport", "format",
+                                             "start_date", "end_date", "status")},
+            "matches": matches, "standings": standings, "champion": champ}
+
+
+@app.get("/api/public/{token}/qr.svg")
+def public_qr(token: str, request: Request):
+    import qrcode
+    import qrcode.image.svg
+    url = str(request.base_url).rstrip("/") + f"/p/{token}"
+    img = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage, box_size=12, border=2)
+    buf = io.BytesIO()
+    img.save(buf)
+    return Response(buf.getvalue(), media_type="image/svg+xml")
+
+
+@app.get("/p/{token}")
+def public_page(token: str):
+    return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
 
 
 app.mount("/logos", StaticFiles(directory=UPLOAD_DIR), name="logos")

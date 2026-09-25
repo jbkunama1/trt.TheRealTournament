@@ -192,6 +192,21 @@ function renderTourDetail() {
       ${canWrite() ? `<button class="btn ok" onclick="genPlan()">⚙️ Spielplan (neu) generieren</button>` : ''}
     </div>`;
 
+  // 📣 Öffentliche Ansicht (v1.1)
+  if (canWrite()) {
+    const pub = t.public_token;
+    html += `<div class="card form-card">
+      <h3>📣 Öffentliche Live-Ansicht</h3>
+      ${pub ? `
+        <p class="hint">Link (funktioniert ohne Login, aktualisiert automatisch):</p>
+        <p><a class="btn" target="_blank" href="/p/${esc(pub)}">🔗 ${location.origin}/p/${esc(pub)}</a>
+          <a class="btn ghost" target="_blank" href="/api/public/${esc(pub)}/qr.svg">📱 QR-Code</a>
+          <button class="btn danger small" onclick="togglePublic(false)">🔒 Deaktivieren</button></p>`
+      : `<p class="hint">Für Beamer/Anzeige ohne Login – inkl. QR-Code zum Teilen.</p>
+         <button class="btn primary" onclick="togglePublic(true)">📣 Öffentlichen Link erzeugen</button>`}
+    </div>`;
+  }
+
   if (canWrite()) html += `
     <div class="card form-card">
       <h3>👥 Teams zuweisen (${t.teams.length})</h3>
@@ -215,6 +230,11 @@ function renderTourDetail() {
     <div><h2>📊 Tabelle</h2><div id="standingBox"></div></div></div>`;
   d.innerHTML = html;
   renderMatches(); renderStandings();
+}
+
+async function togglePublic(on) {
+  await api(`/api/tournaments/${CUR.id}/public`, {method: on ? 'POST' : 'DELETE'});
+  await openTour(CUR.id);
 }
 
 async function toggleTT(tid, teamId, on) {
