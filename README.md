@@ -43,6 +43,8 @@ docker run -d \
 
 ## 🐙 Portainer-Stack
 
+Fertige `docker-compose.yml` liegt im Repo-Root – in Portainer direkt als **Git-Stack** einbinden oder Inhalt kopieren:
+
 ```yaml
 services:
   trt:
@@ -59,10 +61,10 @@ services:
       SEED_DEMO: "true"         # Demo-Teams anlegen (7a-9b 🦁🐯🦅🦈)
       TZ: Europe/Berlin
     networks:
-      - higfishNetwork
+      - highfishNetwork
 
 networks:
-  higfishNetwork:
+  highfishNetwork:
     external: true            # vorhandenes Docker-Netzwerk wiederverwenden
 
 volumes:
@@ -130,6 +132,7 @@ Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
 │       ├── public.html    # Öffentliche Live-Ansicht (ohne Login)
 │       ├── app.js / style.css
 ├── Dockerfile             # python:3.12-slim, läuft auf amd64 + arm64
+├── docker-compose.yml     # Portainer-Stack (Port 8092, highfishNetwork)
 ├── requirements.txt
 └── .github/workflows/     # Build → ghcr.io
 ```

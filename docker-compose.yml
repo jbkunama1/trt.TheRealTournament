@@ -15,10 +15,10 @@ services:
       SEED_DEMO: "true"           # "false" = keine Demo-Teams
       TZ: Europe/Berlin
     networks:
-      - higfishNetwork
+      - highfishNetwork
 
 networks:
-  higfishNetwork:
+  highfishNetwork:
     external: true                # vorhandenes Docker-Netzwerk wiederverwenden
 
 volumes:
