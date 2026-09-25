@@ -20,6 +20,7 @@
 | 📄 **PDF-Export** | Spielplan + Tabellen als druckfertiges PDF (A4 quer) |
 | ⚙️ **Benutzerverwaltung** | Rollen: 👑 admin · 🧑‍🏫 lehrer · 👀 leser (z. B. für Schüler-Accounts) |
 | 🎨 **5 Designs** | 🏟️ Sportplatz · 🌅 Sunset · 🌲 Wald · 🌙 Night · 🌸 Pastell – pro Benutzer gespeichert |
+| 📣 **Live-Ansicht** *(v1.1)* | Öffentlicher Link ohne Login, Auto-Refresh alle 10 s + **QR-Code** zum Teilen – ideal für Beamer 📺 |
 | 🐳 **Docker** | Ein Container, Image via GitHub Action auf `ghcr.io`, arm64-ready (DietPi!) |
 
 ---
@@ -80,6 +81,15 @@ volumes:
 | `DATA_DIR` | `/data` | Speicherort für SQLite (`trt.db`) & Logos (`uploads/`) |
 | `TZ` | – | Zeitzone, z. B. `Europe/Berlin` |
 
+## 📣 Öffentliche Live-Ansicht (v1.1)
+
+In der Turnier-Ansicht auf **„📣 Öffentlichen Link erzeugen“** klicken:
+
+- Öffnet eine Live-Seite ohne Login (`/p/<token>`)
+- Aktualisiert alle 10 s automatisch – perfekt für **Beamer in der Sporthalle** 📺
+- **QR-Code** als SVG zum Ausdrucken/Anhängen (`/api/public/<token>/qr.svg`)
+- Jederzeit wieder deaktivierbar 🔒
+
 ## 🔄 Workflow: Image bauen
 
 Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
@@ -96,16 +106,17 @@ Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
 1. 🧑‍🏫 Lehrer legt Turnier an (z. B. „Winterturnier 8er“, Fußball, Gruppenmodus)
 2. 👥 Teams aus den Klassen anlegen (mit Wappentier-Emoji 🦁 + Logo der Klasse)
 3. ⚙️ Teams zuweisen → **Spielplan generieren** → ⏱️ Zeitplan setzen
-4. 👀 Schüler bekommen `leser`-Accounts und verfolgen alles am Handy 📱
-5. 📝 Ergebnisse live eintragen · 📄 PDF aushängen · 📅 .ics ins Handy
+4. 📣 Öffentlichen Link erzeugen → QR-Code an die Hallentür, Beamer zeigt Live-Stand
+5. 👀 Schüler bekommen `leser`-Accounts oder nutzen den öffentlichen Link 📱
+6. 📝 Ergebnisse live eintragen · 📄 PDF aushängen · 📅 .ics ins Handy
 
-## 🗺️ Roadmap / Erweiterungsideen
+## 🗺️ Roadmap / Erweiterungen
 
-- [ ] 📣 Öffentliche Live-Ansicht ohne Login (Read-only-Link pro Turnier)
-- [ ] 🥉 Spiel um Platz 3 · Doppel-K.o.
-- [ ] 🔄 Schweizer System (Chess-Style) für große Gruppen
-- [ ] 📱 QR-Code zur öffentlichen Turnierseite
-- [ ] 🏅 Urkunden-Generator (PDF) für die Top 3
+- [x] 📣 Öffentliche Live-Ansicht ohne Login (v1.1) ✅
+- [x] 📱 QR-Code zur öffentlichen Turnierseite (v1.1) ✅
+- [ ] 🏅 Urkunden-Generator (PDF) für die Top 3 (geplant: v1.2)
+- [ ] 🥉 Spiel um Platz 3 · Doppel-K.o. (geplant: v1.3)
+- [ ] 🔄 Schweizer System für große Gruppen (geplant: v1.4)
 - [ ] 👶 Pausensport-Modus: spontane Mini-Turniere
 - [ ] 🌐 LDAP/OAuth-Anbindung für Schul-Accounts
 
@@ -113,8 +124,11 @@ Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
 
 ```
 ├── app/
-│   ├── main.py            # FastAPI-Backend (API, Turnierlogik, Exporte)
-│   └── static/            # Frontend (Vanilla JS, keine Build-Tools)
+│   ├── main.py            # FastAPI-Backend (API, Turnierlogik, Exporte, Public-Links)
+│   └── static/
+│       ├── index.html     # Verwaltung (Login nötig)
+│       ├── public.html    # Öffentliche Live-Ansicht (ohne Login)
+│       ├── app.js / style.css
 ├── Dockerfile             # python:3.12-slim, läuft auf amd64 + arm64
 ├── requirements.txt
 └── .github/workflows/     # Build → ghcr.io

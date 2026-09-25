@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRT Live 🏆</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", system-ui, sans-serif; background: linear-gradient(135deg,#0b2545,#13315c);
+  color: #eaf2ff; min-height: 100vh; padding: 1rem; }
+.wrap { max-width: 960px; margin: 0 auto; }
+h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+h1 span { background: linear-gradient(90deg,#3b82f6,#ffd60a); -webkit-background-clip: text;
+  background-clip: text; color: transparent; }
+.meta { color: #9db4d4; margin-bottom: 1rem; }
+.card { background: #16345f; border-radius: 12px; padding: .9rem 1.1rem; margin: .5rem 0;
+  border: 1px solid rgba(255,255,255,.07); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.banner { background: linear-gradient(90deg,#ffd60a,#fbbf24); color: #111; font-weight: 800;
+  font-size: 1.3rem; text-align: center; border-radius: 12px; padding: 1rem; margin: 1rem 0; }
+.round { color: #ffd60a; font-weight: 700; margin: 1rem 0 .4rem; font-size: 1.05rem; }
+.match { display: grid; grid-template-columns: 1fr auto 1fr; gap: .8rem; align-items: center;
+  background: #16345f; border-radius: 10px; padding: .6rem .9rem; margin: .35rem 0;
+  border-left: 4px solid #3b82f6; }
+.match .h { text-align: right; font-weight: 600; }
+.match .a { text-align: left; font-weight: 600; }
+.match .s { background: rgba(255,255,255,.12); border-radius: 8px; padding: .25rem .7rem;
+  font-weight: 800; font-size: 1.05rem; white-space: nowrap; }
+.match .s.offen { color: #9db4d4; font-weight: 400; font-size: .9rem; }
+.match .when { grid-column: 1 / -1; color: #9db4d4; font-size: .78rem; }
+table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
+th { background: #3b82f6; padding: .5rem; text-align: left; font-size: .85rem; }
+td { padding: .45rem .5rem; border-top: 1px solid rgba(255,255,255,.08); font-size: .9rem; }
+tr.hl td { font-weight: 800; background: rgba(74,222,128,.15); }
+.live { display: inline-block; width: 10px; height: 10px; background: #22c55e; border-radius: 50%;
+  margin-right: .4rem; animation: blink 1.5s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+footer { text-align: center; color: #9db4d4; font-size: .8rem; margin-top: 2rem; }
+.err { text-align: center; font-size: 1.2rem; margin-top: 4rem; }
+@media (max-width: 600px) { .match { grid-template-columns: 1fr auto 1fr; gap: .4rem; font-size: .92rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏆 <span id="tName">Lade Turnier …</span></h1>
+  <p class="meta" id="tMeta"><span class="live"></span>Live-Ansicht · aktualisiert alle 10 s</p>
+  <div id="champ"></div>
+  <div class="two" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;align-items:start">
+    <div><h2>🎮 Spiele</h2><div id="matches">⏳ …</div></div>
+    <div><h2>📊 Tabelle</h2><div id="table"></div></div>
+  </div>
+  <footer>🏆 TheRealTournament · Live</footer>
+</div>
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const token = location.pathname.split('/').pop();
+
+async function load() {
+  try {
+    const d = await fetch('/api/public/' + token).then(r => { if (!r.ok) throw 0; return r.json(); });
+    render(d);
+  } catch (e) {
+    document.getElementById('matches').innerHTML =
+      '<div class="err">🔒 Turnier nicht (mehr) öffentlich</div>';
+    clearInterval(timer);
+  }
+}
+
+function chip(side, m) {
+  const n = side === 'h' ? m.home_name : m.away_name;
+  const e = side === 'h' ? m.home_emoji : m.away_emoji;
+  const lo = side === 'h' ? m.home_logo : m.away_logo;
+  if (!n) return '❔ TBD';
+  return esc(e || '') + (lo ? ` <img src="/logos/${esc(lo)}" style="height:20px;vertical-align:middle;border-radius:4px"> ` : ' ') + esc(n);
+}
+
+function render(d) {
+  document.getElementById('tName').textContent = d.tournament.name;
+  document.getElementById('tMeta').innerHTML =
+    `<span class="live"></span>${esc(d.tournament.sport)} · ${esc(d.tournament.start_date || '')} · Live`;
+  document.getElementById('champ').innerHTML = d.champion
+    ? `<div class="banner">🎉🏆 Turniersieger: ${esc(d.champion.emoji || '')} ${esc(d.champion.name)} 🏆🎉</div>` : '';
+
+  const ms = d.matches || [];
+  let html = '', last = null;
+  for (const m of ms) {
+    const key = (m.group_name && m.group_name !== 'Liga' ? '🌍 Gruppe ' + m.group_name + ' · ' : '') + m.round_name;
+    if (key !== last) { html += `<div class="round">${esc(key)}</div>`; last = key; }
+    const done = m.status === 'erledigt';
+    const score = done
+      ? `<span class="s">${m.home_score}:${m.away_score}${m.home_pen != null ? ` (${m.home_pen}:${m.away_pen})` : ''}</span>`
+      : `<span class="s offen">⏳</span>`;
+    const when = [m.date, m.time, m.court].filter(Boolean).join(' · ');
+    html += `<div class="match">
+      <div class="h">${chip('h', m)}</div>${score}<div class="a">${chip('a', m)}</div>
+      ${when ? `<div class="when">${esc(when)}</div>` : ''}</div>`;
+  }
+  document.getElementById('matches').innerHTML = html || '<p class="err">Noch keine Spiele</p>';
+
+  const st = d.standings || [];
+  if (st.length) {
+    const groups = [...new Set(st.map(s => s.group || '-'))].sort();
+    let th = '';
+    for (const g of groups) {
+      const rows = st.filter(s => (s.group || '-') === g);
+      if (g !== '-' && g !== 'Liga') th += `<div class="round">${'🌍 Gruppe ' + esc(g)}</div>`;
+      th += `<table><tr><th>#</th><th>Team</th><th>Sp</th><th>Pkt</th></tr>` +
+        rows.map((s, i) => `<tr${i === 0 ? ' class="hl"' : ''}><td>${i + 1}</td>
+          <td>${esc(s.emoji || '')} ${esc(s.name)}</td><td>${s.sp}</td><td>${s.pts}</td></tr>`).join('') +
+        `</table>`;
+    }
+    document.getElementById('table').innerHTML = th;
+  } else {
+    document.getElementById('table').innerHTML = '<p style="color:#9db4d4">–</p>';
+  }
+}
+
+load();
+const timer = setInterval(load, 10000);
+</script>
+</body>
+</html>
