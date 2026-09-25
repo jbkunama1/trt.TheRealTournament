@@ -1,0 +1,25 @@
+# 🏆 TheRealTournament – Portainer/Compose-Stack
+# Image wird via GitHub Action gebaut und nach ghcr.io gepusht.
+services:
+  trt:
+    image: ghcr.io/jbkunama1/trt-therealtournament:latest
+    container_name: therealtournament
+    restart: unless-stopped
+    ports:
+      - "8092:8000"
+    volumes:
+      - trt_data:/data            # SQLite-DB + hochgeladene Team-Logos
+    environment:
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: changeme    # ⚠️ nur beim ersten Start relevant – danach ändern!
+      SEED_DEMO: "true"           # "false" = keine Demo-Teams
+      TZ: Europe/Berlin
+    networks:
+      - higfishNetwork
+
+networks:
+  higfishNetwork:
+    external: true                # vorhandenes Docker-Netzwerk wiederverwenden
+
+volumes:
+  trt_data:
