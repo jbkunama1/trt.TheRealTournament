@@ -18,6 +18,7 @@
 | ⏱️ **Zeitplan** | Automatische Ansetzung: Datum, Startzeit, Spieldauer, mehrere Plätze (Rotation) |
 | 📅 **Kalender** | Übersicht aller terminierten Spiele + **iCal-Export (.ics)** für Handy |
 | 📄 **PDF-Export** | Spielplan + Tabellen als druckfertiges PDF (A4 quer) |
+| 🏅 **Urkunden** *(v1.2)* | Ein Klick = fertige Urkunden-PDF für Platz 1–3 (A4 quer, 🥇🥈🥉-Farben, Unterschriftszeile) |
 | ⚙️ **Benutzerverwaltung** | Rollen: 👑 admin · 🧑‍🏫 lehrer · 👀 leser (z. B. für Schüler-Accounts) |
 | 🎨 **5 Designs** | 🏟️ Sportplatz · 🌅 Sunset · 🌲 Wald · 🌙 Night · 🌸 Pastell – pro Benutzer gespeichert |
 | 📣 **Live-Ansicht** *(v1.1)* | Öffentlicher Link ohne Login, Auto-Refresh alle 10 s + **QR-Code** zum Teilen – ideal für Beamer 📺 |
@@ -92,6 +93,14 @@ In der Turnier-Ansicht auf **„📣 Öffentlichen Link erzeugen“** klicken:
 - **QR-Code** als SVG zum Ausdrucken/Anhängen (`/api/public/<token>/qr.svg`)
 - Jederzeit wieder deaktivierbar 🔒
 
+## 🏅 Urkunden-Generator (v1.2)
+
+Nach Turnierende in der Turnier-Ansicht auf **„🏅 Urkunden (Top 3)“** klicken:
+
+- Erzeugt ein PDF mit **einer Urkunde pro Platz 1–3** (A4 quer)
+- Liga → aus der Endtabelle; K.o./Gruppen → Sieger, Finalist, Halbfinal-Verlierer
+- Gold/Silber/Bronze-Rahmen + Unterschriftszeile + Turnierdatum 🖨️
+
 ## 🔄 Workflow: Image bauen
 
 Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
@@ -110,13 +119,13 @@ Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
 3. ⚙️ Teams zuweisen → **Spielplan generieren** → ⏱️ Zeitplan setzen
 4. 📣 Öffentlichen Link erzeugen → QR-Code an die Hallentür, Beamer zeigt Live-Stand
 5. 👀 Schüler bekommen `leser`-Accounts oder nutzen den öffentlichen Link 📱
-6. 📝 Ergebnisse live eintragen · 📄 PDF aushängen · 📅 .ics ins Handy
+6. 📝 Ergebnisse live eintragen · 📄 PDF aushängen · 🏅 Urkunden drucken
 
 ## 🗺️ Roadmap / Erweiterungen
 
 - [x] 📣 Öffentliche Live-Ansicht ohne Login (v1.1) ✅
 - [x] 📱 QR-Code zur öffentlichen Turnierseite (v1.1) ✅
-- [ ] 🏅 Urkunden-Generator (PDF) für die Top 3 (geplant: v1.2)
+- [x] 🏅 Urkunden-Generator (PDF) für die Top 3 (v1.2) ✅
 - [ ] 🥉 Spiel um Platz 3 · Doppel-K.o. (geplant: v1.3)
 - [ ] 🔄 Schweizer System für große Gruppen (geplant: v1.4)
 - [ ] 👶 Pausensport-Modus: spontane Mini-Turniere
@@ -126,7 +135,7 @@ Jeder Push auf `main` (oder Tag `v1.2.3`) baut automatisch:
 
 ```
 ├── app/
-│   ├── main.py            # FastAPI-Backend (API, Turnierlogik, Exporte, Public-Links)
+│   ├── main.py            # FastAPI-Backend (API, Turnierlogik, Exporte, Urkunden, Public-Links)
 │   └── static/
 │       ├── index.html     # Verwaltung (Login nötig)
 │       ├── public.html    # Öffentliche Live-Ansicht (ohne Login)

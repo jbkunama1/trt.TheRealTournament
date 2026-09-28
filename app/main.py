@@ -307,10 +307,109 @@ def maybe_finals(con, tid):
 def latin1(s):
     return re.sub(r"[^\x00-\xff]", " ", str(s if s is not None else "")).strip()
 
+
+def placements(con, tid):
+    """Liefert [(platz, team_dict), ...] – Liga: Top 3; KO/Gruppen: Final-Sieger,
+    Final-Verlierer, Gewinner Spiel um Platz 3 oder Halbfinal-Verlierer."""
+    t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+
+    def teamrow(team_id):
+        r = con.execute(
+            "SELECT id,name,emoji,color,klasse FROM teams WHERE id=?", (team_id,)).fetchone()
+        return dict(r) if r else None
+
+    if t["format"] == "liga":
+        total = con.execute(
+            "SELECT COUNT(*) c FROM matches WHERE tournament_id=?", (tid,)).fetchone()["c"]
+        done = con.execute(
+            "SELECT COUNT(*) c FROM matches WHERE tournament_id=? AND status='erledigt'",
+            (tid,)).fetchone()["c"]
+        if not total or done < total:
+            return []
+        st = compute_standings(con, tid)
+        return [(i + 1, s) for i, s in enumerate(st[:3])]
+
+    fin = con.execute(
+        "SELECT * FROM matches WHERE tournament_id=? AND group_name IS NULL"
+        " AND round_name LIKE 'Finale%'", (tid,)).fetchone()
+    wid = winner_of(fin) if fin else None
+    if not wid:
+        return []
+    platz3 = con.execute(
+        "SELECT * FROM matches WHERE tournament_id=? AND round_name LIKE '%Platz 3%'"
+        " AND status='erledigt' ORDER BY id DESC", (tid,)).fetchone()
+    loser_id = fin["away_id"] if wid == fin["home_id"] else fin["home_id"]
+    res = [(1, teamrow(wid)), (2, teamrow(loser_id))]
+    if platz3:
+        w3 = winner_of(platz3)
+        if w3:
+            res.append((3, teamrow(w3)))
+    else:
+        for hf in con.execute(
+                "SELECT * FROM matches WHERE tournament_id=? AND round_name LIKE 'Halbfinale%'"
+                " AND status='erledigt' ORDER BY id", (tid,)):
+            hw = winner_of(hf)
+            if hw:
+                o = hf["away_id"] if hw == hf["home_id"] else hf["home_id"]
+                if o:
+                    res.append((3, teamrow(o)))
+    return [r for r in res if r[1]]
+
+
+def build_certificates_pdf(t, plats):
+    """Urkunden-PDF: eine A4-Querformat-Seite pro Team (Platz 1-3)."""
+    from reportlab.lib.colors import HexColor
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import cm
+    from reportlab.pdfgen import canvas as rl_canvas
+
+    MEDAL = {1: ("🥇 1. Platz", "#FFD700"), 2: ("🥈 2. Platz", "#9CA3AF"), 3: ("🥉 3. Platz", "#B45309")}
+    buf = io.BytesIO()
+    c = rl_canvas.Canvas(buf, pagesize=landscape(A4))
+    W, H = landscape(A4)
+    for platz, team in plats:
+        label, colhex = MEDAL.get(platz, (f"{platz}. Platz", "#666666"))
+        col = HexColor(colhex)
+        c.setStrokeColor(col)
+        c.setLineWidth(5)
+        c.rect(0.9 * cm, 0.9 * cm, W - 1.8 * cm, H - 1.8 * cm)
+        c.setLineWidth(1)
+        c.rect(1.2 * cm, 1.2 * cm, W - 2.4 * cm, H - 2.4 * cm)
+        c.setFillColor(HexColor("#111111"))
+        c.setFont("Helvetica-Bold", 26)
+        c.drawCentredString(W / 2, H - 3.2 * cm, "U R K U N D E")
+        c.setFont("Helvetica", 14)
+        c.drawCentredString(W / 2, H - 4.2 * cm, latin1(t["name"]))
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(W / 2, H - 4.9 * cm, latin1(t["sport"] or ""))
+        c.setFont("Helvetica-Bold", 34)
+        c.setFillColor(col)
+        c.drawCentredString(W / 2, H - 7.6 * cm, latin1(label))
+        c.setFillColor(HexColor("#111111"))
+        c.setFont("Helvetica-Bold", 30)
+        c.drawCentredString(W / 2, H - 9.6 * cm, latin1(team["name"]))
+        if team.get("klasse"):
+            c.setFont("Helvetica", 15)
+            c.drawCentredString(W / 2, H - 10.7 * cm, f"Klasse {latin1(team['klasse'])}")
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(W / 2, H - 12.4 * cm,
+                            f"erreicht beim Turnier vom {t['start_date'] or '_'} diesen Platz - Glueckwunsch!")
+        datum = t["end_date"] or t["start_date"] or datetime.now().strftime("%Y-%m-%d")
+        c.setFont("Helvetica", 12)
+        c.drawString(3 * cm, 2.6 * cm, f"Datum: {datum}")
+        c.drawRightString(W - 3 * cm, 2.6 * cm, "_______________________")
+        c.drawRightString(W - 3 * cm, 2.1 * cm, "Unterschrift")
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawCentredString(W / 2, 1.6 * cm, "TheRealTournament")
+        c.showPage()
+    c.save()
+    buf.seek(0)
+    return buf
+
 # --- END PURE LOGIC ---
 
 
-app = FastAPI(title="TheRealTournament 🏆", version="1.1.0")
+app = FastAPI(title="TheRealTournament 🏆", version="1.2.0")
 
 
 def create_user(con, username, pw, role, display_name=""):
@@ -948,6 +1047,24 @@ def public_qr(token: str, request: Request):
 @app.get("/p/{token}")
 def public_page(token: str):
     return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
+
+
+# ---------- Urkunden (v1.2) ----------
+@app.get("/api/tournaments/{tid}/urkunden.pdf")
+def urkunden_pdf(tid: int, u=Depends(current_user)):
+    con = db()
+    t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
+    plats = placements(con, tid)
+    con.close()
+    if not plats:
+        raise HTTPException(400, "Turnier noch nicht beendet – Urkunden gibt es am Ende 🏁")
+    buf = build_certificates_pdf(t, plats)
+    fname = re.sub(r"[^\w-]+", "_", t["name"]) + "_urkunden.pdf"
+    return StreamingResponse(buf, media_type="application/pdf",
+                             headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
 app.mount("/logos", StaticFiles(directory=UPLOAD_DIR), name="logos")

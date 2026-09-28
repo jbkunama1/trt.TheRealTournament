@@ -189,6 +189,7 @@ function renderTourDetail() {
   html += `<div class="actions">
       <a class="btn" href="/api/tournaments/${t.id}/export.pdf">📄 PDF-Export</a>
       <a class="btn" href="/api/tournaments/${t.id}/export.ics">📅 Kalender (.ics)</a>
+      <a class="btn" href="/api/tournaments/${t.id}/urkunden.pdf">🏅 Urkunden (Top 3)</a>
       ${canWrite() ? `<button class="btn ok" onclick="genPlan()">⚙️ Spielplan (neu) generieren</button>` : ''}
     </div>`;
 
