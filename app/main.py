@@ -32,6 +32,11 @@ FORMATS = {"liga": "⚽ Jeder gegen Jeden (Liga)",
            "gruppen": "🌍 Gruppenphase + K.o."}
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS settings(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT UNIQUE NOT NULL,
+  value TEXT NOT NULL,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS users(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
@@ -94,6 +99,28 @@ def db():
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
     return con
+
+
+THEMES = {"gradient-blue", "gradient-sunset", "gradient-forest",
+          "gradient-midnight", "gradient-ocean"}
+
+
+def get_setting(key, default=None):
+    con = db()
+    row = con.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    con.close()
+    return row["value"] if row else default
+
+
+def set_setting(key, value):
+    con = db()
+    con.execute(
+        """INSERT INTO settings(key, value) VALUES(?, ?)
+           ON CONFLICT(key) DO UPDATE SET value=excluded.value,
+           updated_at=CURRENT_TIMESTAMP""",
+        (key, value))
+    con.commit()
+    con.close()
 
 
 def hash_pw(pw, salt):
@@ -422,6 +449,7 @@ def create_user(con, username, pw, role, display_name=""):
 def init_db():
     con = db()
     con.executescript(SCHEMA)
+    con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'gradient-blue')")
     cols = [r[1] for r in con.execute("PRAGMA table_info(tournaments)")]
     if "public_token" not in cols:
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
@@ -501,6 +529,19 @@ def me(u=Depends(current_user)):
 
 class ThemeIn(BaseModel):
     theme: str
+
+
+@app.get("/api/settings/theme")
+def get_theme():
+    return {"theme": get_setting("theme", "gradient-blue")}
+
+
+@app.put("/api/settings/theme")
+def set_global_theme(t: ThemeIn, u=Depends(need("admin"))):
+    if t.theme not in THEMES:
+        raise HTTPException(400, "⚠️ Ungültiges Theme")
+    set_setting("theme", t.theme)
+    return {"ok": True, "theme": t.theme}
 
 
 @app.put("/api/auth/me/theme")

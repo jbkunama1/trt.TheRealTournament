@@ -32,13 +32,6 @@
       <button class="tab admin-only" data-tab="users" onclick="showTab('users')">⚙️ Benutzer</button>
     </nav>
     <div class="head-right">
-      <select id="themeSel" onchange="setTheme(this.value)" title="🎨 Design">
-        <option value="ksc">🏟️ Sportplatz</option>
-        <option value="sunset">🌅 Sunset</option>
-        <option value="wald">🌲 Wald</option>
-        <option value="night">🌙 Night</option>
-        <option value="pastell">🌸 Pastell</option>
-      </select>
       <span id="meBadge" class="me"></span>
       <button class="btn ghost" onclick="doLogout()">Abmelden 🚪</button>
     </div>
@@ -87,6 +80,21 @@
           <select id="uRole"><option value="leser">👀 leser</option><option value="lehrer">🧑‍🏫 lehrer</option><option value="admin">👑 admin</option></select>
         </div>
         <button class="btn primary" onclick="addUser()">Anlegen ✅</button>
+      </div>
+      <div class="card form-card">
+        <h3>🎨 Design-Einstellungen</h3>
+        <label class="hint" for="globalThemeSel">Globales Hintergrund-Theme</label>
+        <div class="actions">
+          <select id="globalThemeSel" onchange="previewTheme(this.value)">
+            <option value="gradient-blue">🔵 Blau (Standard)</option>
+            <option value="gradient-sunset">🌅 Sunset</option>
+            <option value="gradient-forest">🌲 Forest</option>
+            <option value="gradient-midnight">🌙 Midnight</option>
+            <option value="gradient-ocean">🌊 Ocean</option>
+          </select>
+          <button class="btn primary" onclick="saveGlobalTheme()">💾 Speichern</button>
+        </div>
+        <p class="hint">Die Auswahl wird in SQLite gespeichert und gilt für alle Browser-Nutzer.</p>
       </div>
       <div id="userList" class="cards"></div>
     </section>

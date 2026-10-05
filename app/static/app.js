@@ -34,7 +34,7 @@ async function showApp() {
   $('appView').classList.remove('hidden');
   $('meBadge').textContent = `${ME.display_name || ME.username} ${ME.role === 'admin' ? '👑' : ME.role === 'lehrer' ? '🧑‍🏫' : '👀'}`;
   document.querySelectorAll('.admin-only').forEach(e => e.style.display = ME.role === 'admin' ? '' : 'none');
-  $('themeSel').value = ME.theme || 'ksc';
+  if (ME.role === 'admin') await loadGlobalTheme();
   if (!canWrite()) $('teamForm').style.display = 'none';
   await loadAll();
 }
@@ -54,7 +54,32 @@ async function doLogout() {
 }
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
-  if (ME) api('/api/auth/me/theme', {method: 'PUT', body: {theme: t}}).catch(() => {});
+}
+function previewTheme(theme) {
+  setTheme(theme);
+}
+async function loadAndApplyTheme() {
+  try {
+    const data = await fetch('/api/settings/theme').then(r => {
+      if (!r.ok) throw new Error('Theme konnte nicht geladen werden');
+      return r.json();
+    });
+    setTheme(data.theme || 'gradient-blue');
+    if ($('globalThemeSel')) $('globalThemeSel').value = data.theme || 'gradient-blue';
+  } catch (e) {
+    setTheme('gradient-blue');
+  }
+}
+async function saveGlobalTheme() {
+  const theme = $('globalThemeSel').value;
+  await api('/api/settings/theme', {method: 'PUT', body: {theme}});
+  setTheme(theme);
+  alert('🎨 Globales Theme gespeichert');
+}
+async function loadGlobalTheme() {
+  const data = await api('/api/settings/theme');
+  $('globalThemeSel').value = data.theme;
+  setTheme(data.theme);
 }
 
 /* ---------- Tabs ---------- */
@@ -403,11 +428,10 @@ async function delUser(id) {
 /* ---------- Init ---------- */
 $('year').textContent = new Date().getFullYear();
 $('loginPw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+loadAndApplyTheme();
 if (TOKEN) {
-  document.documentElement.dataset.theme = 'ksc';
   api('/api/auth/me').then(u => {
     ME = u;
-    document.documentElement.dataset.theme = ME.theme || 'ksc';
     showApp();
   }).catch(() => showLogin());
 } else showLogin();
