@@ -9,6 +9,10 @@
 body { font-family: "Segoe UI", system-ui, sans-serif; color: #eaf2ff; min-height: 100vh; padding: 1rem;
   background: radial-gradient(1100px 620px at 88% -12%, rgba(255,214,10,.20), transparent 60%), radial-gradient(900px 700px at -12% 112%, rgba(59,130,246,.32), transparent 60%), linear-gradient(160deg, #0b2545 0%, #13315c 55%, #1d4e89 100%);
   background-attachment: fixed; }
+body[data-theme="gradient-sunset"] { background: linear-gradient(135deg, #ff6a00, #ee0979); }
+body[data-theme="gradient-forest"] { background: linear-gradient(135deg, #11998e, #38ef7d); }
+body[data-theme="gradient-midnight"] { background: linear-gradient(135deg, #232526, #414345); }
+body[data-theme="gradient-ocean"] { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
 .wrap { max-width: 980px; margin: 0 auto; }
 h1 { font-size: 1.7rem; margin-bottom: .2rem; }
 h1 span { background: linear-gradient(90deg,#3b82f6,#ffd60a); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -49,6 +53,10 @@ footer { text-align: center; color: #9db4d4; font-size: .8rem; margin-top: 2rem;
 <script>
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const token = location.pathname.split('/').pop();
+
+fetch('/api/settings/theme').then(r => r.json()).then(d => {
+  document.body.dataset.theme = d.theme || 'gradient-blue';
+}).catch(() => {});
 
 async function load() {
   try {
