@@ -101,8 +101,14 @@ def db():
     return con
 
 
-THEMES = {"gradient-blue", "gradient-sunset", "gradient-forest",
-          "gradient-midnight", "gradient-ocean"}
+THEMES = {
+    "unsplash-stadium", "unsplash-football", "unsplash-basketball",
+    "unsplash-volleyball", "unsplash-running", "unsplash-crowd",
+    "unsplash-night", "unsplash-arena", "unsplash-field", "unsplash-neon",
+    # Keep themes from v1.4 valid for existing installations.
+    "gradient-blue", "gradient-sunset", "gradient-forest",
+    "gradient-midnight", "gradient-ocean",
+}
 
 
 def get_setting(key, default=None):
@@ -449,7 +455,7 @@ def create_user(con, username, pw, role, display_name=""):
 def init_db():
     con = db()
     con.executescript(SCHEMA)
-    con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'gradient-blue')")
+    con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'unsplash-stadium')")
     cols = [r[1] for r in con.execute("PRAGMA table_info(tournaments)")]
     if "public_token" not in cols:
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
@@ -533,7 +539,7 @@ class ThemeIn(BaseModel):
 
 @app.get("/api/settings/theme")
 def get_theme():
-    return {"theme": get_setting("theme", "gradient-blue")}
+    return {"theme": get_setting("theme", "unsplash-stadium")}
 
 
 @app.put("/api/settings/theme")
@@ -1032,7 +1038,7 @@ def enable_public(tid: int, u=Depends(need("admin", "lehrer"))):
     con.execute("UPDATE tournaments SET public_token=? WHERE id=?", (token, tid))
     con.commit()
     con.close()
-    return {"token": token, "path": f"/p/{token}"}
+    return {"token": token, "path": f"/p/{token}", "view_path": f"/view/{token}"}
 
 
 @app.delete("/api/tournaments/{tid}/public")
@@ -1087,6 +1093,11 @@ def public_qr(token: str, request: Request):
 
 @app.get("/p/{token}")
 def public_page(token: str):
+    return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
+
+
+@app.get("/view/{token}")
+def view_page(token: str):
     return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
 
 
