@@ -456,6 +456,11 @@ def init_db():
     con = db()
     con.executescript(SCHEMA)
     con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'unsplash-stadium')")
+    # v1.4 stored the old gradient default; move existing installations to
+    # the first photographic theme while preserving explicit user choices.
+    con.execute(
+        """UPDATE settings SET value='unsplash-stadium', updated_at=CURRENT_TIMESTAMP
+           WHERE key='theme' AND value='gradient-blue'""")
     cols = [r[1] for r in con.execute("PRAGMA table_info(tournaments)")]
     if "public_token" not in cols:
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")

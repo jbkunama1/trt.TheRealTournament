@@ -53,7 +53,7 @@ nav { display: flex; gap: .4rem; flex-wrap: wrap; }
 .head-right { margin-left: auto; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .me { color: var(--muted); font-size: .9rem; }
 
-main { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem; }
+main { width: min(1100px, 100%); margin: 1.5rem auto; padding: 0 1rem; }
 .tabpane > h2 { margin-bottom: 1rem; }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
