@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>View - TheRealTournament</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#f8fafc;background:#07111f}*{box-sizing:border-box}body{min-height:100vh;margin:0;padding:clamp(20px,5vw,70px);background:linear-gradient(120deg,rgba(5,15,35,.9),rgba(12,35,56,.7)),url("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=2400&q=85") center/cover fixed}.shell{width:min(900px,100%);margin:auto;text-align:center}.back{color:#bae6fd;text-decoration:none}.mark{font-size:3.5rem;margin-top:35px}h1{font-size:clamp(2rem,5vw,4rem);margin:12px 0}p{color:#cbd5e1;font-size:1.1rem}.panel{margin-top:32px;padding:clamp(22px,5vw,46px);border:1px solid #ffffff2b;border-radius:24px;background:#0f2138cc;box-shadow:0 20px 60px #0006;backdrop-filter:blur(16px)}select{width:100%;padding:16px;border:1px solid #64748b;border-radius:12px;background:#07111f;color:#fff;font-size:1rem}button{margin-top:18px;width:100%;padding:15px;border:0;border-radius:12px;background:linear-gradient(90deg,#0ea5e9,#2563eb);color:#fff;font-size:1rem;font-weight:800;cursor:pointer}.empty{padding:22px;border-radius:14px;background:#1e293b;color:#cbd5e1}.hint{font-size:.9rem;color:#94a3b8}
+</style>
+</head>
+<body><main class="shell">
+  <a class="back" href="/">← Startseite</a><div class="mark">📺</div><h1>Live View</h1><p>Wähle das Event, das aktuell läuft.</p>
+  <section class="panel"><div id="content"><p>Events werden geladen ...</p></div></section>
+</main>
+<script>
+const content=document.getElementById('content');
+async function loadEvents(){
+  try{
+    const events=await fetch('/api/public/events').then(r=>{if(!r.ok)throw new Error();return r.json()});
+    if(!events.length){content.innerHTML='<div class="empty">🔕 Aktuell läuft kein öffentliches Event.</div><p class="hint">Bitte den Admin bitten, für ein Turnier die öffentliche Live-Ansicht zu aktivieren.</p>';return}
+    content.innerHTML='<label for="event">Aktuelles Event</label><select id="event">'+events.map(e=>`<option value="${e.public_token}">${escapeHtml(e.name)}${e.sport?' · '+escapeHtml(e.sport):''}</option>`).join('')+'</select><button id="open">📺 Anzeige öffnen</button>';
+    document.getElementById('open').onclick=()=>{location.href='/view/'+document.getElementById('event').value};
+  }catch(e){content.innerHTML='<div class="empty">⚠️ Events konnten nicht geladen werden.</div>'}
+}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+loadEvents();
+</script>
+</body>
+</html>

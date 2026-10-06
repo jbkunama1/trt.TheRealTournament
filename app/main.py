@@ -1055,6 +1055,20 @@ def disable_public(tid: int, u=Depends(need("admin", "lehrer"))):
     return {"ok": True}
 
 
+@app.get("/api/public/events")
+def public_events():
+    con = db()
+    rows = con.execute(
+        """SELECT public_token, name, sport, start_date, end_date, status
+           FROM tournaments
+           WHERE public_token IS NOT NULL AND public_token != ''
+             AND status IN ('laeuft', 'finalrunde')
+           ORDER BY start_date DESC, name"""
+    ).fetchall()
+    con.close()
+    return [dict(row) for row in rows]
+
+
 @app.get("/api/public/{token}")
 def public_data(token: str):
     con = db()
@@ -1084,7 +1098,6 @@ def public_data(token: str):
                                              "start_date", "end_date", "status")},
             "matches": matches, "standings": standings, "champion": champ}
 
-
 @app.get("/api/public/{token}/qr.svg")
 def public_qr(token: str, request: Request):
     import qrcode
@@ -1101,9 +1114,25 @@ def public_page(token: str):
     return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
 
 
+@app.get("/view")
+def view_selector_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "view.html"))
+
+
 @app.get("/view/{token}")
 def view_page(token: str):
     return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
+
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "index.html"))
+
+
+# ---------- Landing page ----------
+@app.get("/")
+def landing_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "landing.html"))
 
 
 # ---------- Urkunden (v1.2) ----------

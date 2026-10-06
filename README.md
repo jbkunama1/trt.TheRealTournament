@@ -42,6 +42,11 @@ docker run -d \
 👉 Dann im Browser öffnen: `http://server:8092` und mit `admin / geheim123` einloggen –
 **Passwort danach sofort ändern!** 🔑
 
+Die Startseite bietet getrennte Bereiche:
+
+- `/view` zeigt nur laufende bzw. in der Finalrunde befindliche Turniere zur Auswahl.
+- `/admin` öffnet die Verwaltung; Daten und Aktionen sind nur nach Login mit einem TRT-Benutzer verfügbar.
+
 ## 🐙 Portainer-Stack
 
 Fertige `docker-compose.yml` liegt im Repo-Root – in Portainer direkt als **Git-Stack** einbinden oder Inhalt kopieren:
