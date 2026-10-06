@@ -870,6 +870,9 @@ def get_standings(tid: int, u=Depends(current_user)):
 def get_champion(tid: int, u=Depends(current_user)):
     con = db()
     t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
     champ = None
     if t["format"] == "liga":
         st = compute_standings(con, tid)
@@ -924,6 +927,9 @@ def set_result(mid: int, inp: ResultIn, u=Depends(need("admin", "lehrer"))):
 def export_ics(tid: int, u=Depends(current_user)):
     con = db()
     t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
     matches = con.execute(
         "SELECT m.*, h.name hn, a.name an FROM matches m"
         " LEFT JOIN teams h ON h.id=m.home_id LEFT JOIN teams a ON a.id=m.away_id"
