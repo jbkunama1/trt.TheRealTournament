@@ -20,7 +20,7 @@
 | 📄 **PDF-Export** | Spielplan + Tabellen als druckfertiges PDF (A4 quer) |
 | 🏅 **Urkunden** *(v1.2)* | Ein Klick = fertige Urkunden-PDF für Platz 1–3 (A4 quer, 🥇🥈🥉-Farben, Unterschriftszeile) |
 | ⚙️ **Benutzerverwaltung** | Rollen: 👑 admin · 🧑‍🏫 lehrer · 👀 leser (z. B. für Schüler-Accounts) |
-| 🎨 **5 Designs** | 🔵 Blau · 🌅 Sunset · 🌲 Forest · 🌙 Midnight · 🌊 Ocean – global durch Admin wählbar und in SQLite gespeichert |
+| 🎨 **10 Hintergründe** | Sportmotive von Unsplash – global durch Admin wählbar und in SQLite gespeichert |
 | 📣 **Live-Ansicht** *(v1.1)* | Öffentlicher Link ohne Login, Auto-Refresh alle 10 s + **QR-Code** zum Teilen – ideal für Beamer 📺 |
 | 🐳 **Docker** | Ein Container, Image via GitHub Action auf `ghcr.io`, arm64-ready (DietPi!) |
 
@@ -41,6 +41,11 @@ docker run -d \
 
 👉 Dann im Browser öffnen: `http://server:8092` und mit `admin / geheim123` einloggen –
 **Passwort danach sofort ändern!** 🔑
+
+Die Startseite bietet getrennte Bereiche:
+
+- `/view` zeigt nur laufende bzw. in der Finalrunde befindliche Turniere zur Auswahl.
+- `/admin` öffnet die Verwaltung; Daten und Aktionen sind nur nach Login mit einem TRT-Benutzer verfügbar.
 
 ## 🐙 Portainer-Stack
 
@@ -89,6 +94,7 @@ volumes:
 In der Turnier-Ansicht auf **„📣 Öffentlichen Link erzeugen“** klicken:
 
 - Öffnet eine Live-Seite ohne Login (`/p/<token>`)
+- Anzeige-Link für TV/Beamer: `/view/<token>`
 - Aktualisiert alle 10 s automatisch – perfekt für **Beamer in der Sporthalle** 📺
 - **QR-Code** als SVG zum Ausdrucken/Anhängen (`/api/public/<token>/qr.svg`)
 - Jederzeit wieder deaktivierbar 🔒

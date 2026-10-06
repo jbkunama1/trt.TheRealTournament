@@ -101,8 +101,14 @@ def db():
     return con
 
 
-THEMES = {"gradient-blue", "gradient-sunset", "gradient-forest",
-          "gradient-midnight", "gradient-ocean"}
+THEMES = {
+    "unsplash-stadium", "unsplash-football", "unsplash-basketball",
+    "unsplash-volleyball", "unsplash-running", "unsplash-crowd",
+    "unsplash-night", "unsplash-arena", "unsplash-field", "unsplash-neon",
+    # Keep themes from v1.4 valid for existing installations.
+    "gradient-blue", "gradient-sunset", "gradient-forest",
+    "gradient-midnight", "gradient-ocean",
+}
 
 
 def get_setting(key, default=None):
@@ -449,7 +455,12 @@ def create_user(con, username, pw, role, display_name=""):
 def init_db():
     con = db()
     con.executescript(SCHEMA)
-    con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'gradient-blue')")
+    con.execute("INSERT OR IGNORE INTO settings(key, value) VALUES('theme', 'unsplash-stadium')")
+    # v1.4 stored the old gradient default; move existing installations to
+    # the first photographic theme while preserving explicit user choices.
+    con.execute(
+        """UPDATE settings SET value='unsplash-stadium', updated_at=CURRENT_TIMESTAMP
+           WHERE key='theme' AND value='gradient-blue'""")
     cols = [r[1] for r in con.execute("PRAGMA table_info(tournaments)")]
     if "public_token" not in cols:
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
@@ -533,7 +544,7 @@ class ThemeIn(BaseModel):
 
 @app.get("/api/settings/theme")
 def get_theme():
-    return {"theme": get_setting("theme", "gradient-blue")}
+    return {"theme": get_setting("theme", "unsplash-stadium")}
 
 
 @app.put("/api/settings/theme")
@@ -859,6 +870,9 @@ def get_standings(tid: int, u=Depends(current_user)):
 def get_champion(tid: int, u=Depends(current_user)):
     con = db()
     t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
     champ = None
     if t["format"] == "liga":
         st = compute_standings(con, tid)
@@ -913,6 +927,9 @@ def set_result(mid: int, inp: ResultIn, u=Depends(need("admin", "lehrer"))):
 def export_ics(tid: int, u=Depends(current_user)):
     con = db()
     t = con.execute("SELECT * FROM tournaments WHERE id=?", (tid,)).fetchone()
+    if not t:
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
     matches = con.execute(
         "SELECT m.*, h.name hn, a.name an FROM matches m"
         " LEFT JOIN teams h ON h.id=m.home_id LEFT JOIN teams a ON a.id=m.away_id"
@@ -1032,7 +1049,7 @@ def enable_public(tid: int, u=Depends(need("admin", "lehrer"))):
     con.execute("UPDATE tournaments SET public_token=? WHERE id=?", (token, tid))
     con.commit()
     con.close()
-    return {"token": token, "path": f"/p/{token}"}
+    return {"token": token, "path": f"/p/{token}", "view_path": f"/view/{token}"}
 
 
 @app.delete("/api/tournaments/{tid}/public")
@@ -1042,6 +1059,20 @@ def disable_public(tid: int, u=Depends(need("admin", "lehrer"))):
     con.commit()
     con.close()
     return {"ok": True}
+
+
+@app.get("/api/public/events")
+def public_events():
+    con = db()
+    rows = con.execute(
+        """SELECT public_token, name, sport, start_date, end_date, status
+           FROM tournaments
+           WHERE public_token IS NOT NULL AND public_token != ''
+             AND status IN ('laeuft', 'finalrunde')
+           ORDER BY start_date DESC, name"""
+    ).fetchall()
+    con.close()
+    return [dict(row) for row in rows]
 
 
 @app.get("/api/public/{token}")
@@ -1073,7 +1104,6 @@ def public_data(token: str):
                                              "start_date", "end_date", "status")},
             "matches": matches, "standings": standings, "champion": champ}
 
-
 @app.get("/api/public/{token}/qr.svg")
 def public_qr(token: str, request: Request):
     import qrcode
@@ -1088,6 +1118,27 @@ def public_qr(token: str, request: Request):
 @app.get("/p/{token}")
 def public_page(token: str):
     return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
+
+
+@app.get("/view")
+def view_selector_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "view.html"))
+
+
+@app.get("/view/{token}")
+def view_page(token: str):
+    return FileResponse(os.path.join(BASE_DIR, "static", "public.html"))
+
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "index.html"))
+
+
+# ---------- Landing page ----------
+@app.get("/")
+def landing_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "landing.html"))
 
 
 # ---------- Urkunden (v1.2) ----------

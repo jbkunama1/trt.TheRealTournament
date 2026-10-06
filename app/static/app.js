@@ -64,10 +64,10 @@ async function loadAndApplyTheme() {
       if (!r.ok) throw new Error('Theme konnte nicht geladen werden');
       return r.json();
     });
-    setTheme(data.theme || 'gradient-blue');
-    if ($('globalThemeSel')) $('globalThemeSel').value = data.theme || 'gradient-blue';
+    setTheme(data.theme || 'unsplash-stadium');
+    if ($('globalThemeSel')) $('globalThemeSel').value = data.theme || 'unsplash-stadium';
   } catch (e) {
-    setTheme('gradient-blue');
+    setTheme('unsplash-stadium');
   }
 }
 async function saveGlobalTheme() {
@@ -78,7 +78,8 @@ async function saveGlobalTheme() {
 }
 async function loadGlobalTheme() {
   const data = await api('/api/settings/theme');
-  $('globalThemeSel').value = data.theme;
+  const option = $('globalThemeSel').querySelector(`option[value="${data.theme}"]`);
+  $('globalThemeSel').value = option ? data.theme : 'unsplash-stadium';
   setTheme(data.theme);
 }
 
@@ -224,11 +225,12 @@ function renderTourDetail() {
     html += `<div class="card form-card">
       <h3>📣 Öffentliche Live-Ansicht</h3>
       ${pub ? `
-        <p class="hint">Link (funktioniert ohne Login, aktualisiert automatisch):</p>
-        <p><a class="btn" target="_blank" href="/p/${esc(pub)}">🔗 ${location.origin}/p/${esc(pub)}</a>
+        <p class="hint">Anzeige-Link ohne Login, aktualisiert automatisch:</p>
+        <p><a class="btn" target="_blank" href="/view/${esc(pub)}">📺 Anzeige öffnen</a>
+          <a class="btn ghost" target="_blank" href="/p/${esc(pub)}">🔗 Link teilen</a>
           <a class="btn ghost" target="_blank" href="/api/public/${esc(pub)}/qr.svg">📱 QR-Code</a>
           <button class="btn danger small" onclick="togglePublic(false)">🔒 Deaktivieren</button></p>`
-      : `<p class="hint">Für Beamer/Anzeige ohne Login – inkl. QR-Code zum Teilen.</p>
+      : `<p class="hint">Für Beamer/Anzeige ohne Login – mit großem TV-Layout und automatischer Aktualisierung.</p>
          <button class="btn primary" onclick="togglePublic(true)">📣 Öffentlichen Link erzeugen</button>`}
     </div>`;
   }
