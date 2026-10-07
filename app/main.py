@@ -685,6 +685,11 @@ def upload_logo(tid: int, file: UploadFile = File(...), u=Depends(need("admin", 
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in (".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"):
         raise HTTPException(400, "Nur Bilddateien erlaubt (png/jpg/webp/gif/svg) ⚠️")
+    file.file.seek(0, os.SEEK_END)
+    size = file.file.tell()
+    file.file.seek(0)
+    if size > 10 * 1024 * 1024:
+        raise HTTPException(413, "Bild ist zu groß (maximal 10 MB) ⚠️")
     fname = f"logo_{tid}_{secrets.token_hex(4)}{ext}"
     with open(os.path.join(UPLOAD_DIR, fname), "wb") as fh:
         fh.write(file.file.read())

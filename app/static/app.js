@@ -166,6 +166,19 @@ async function delTeam(id) {
   await api('/api/teams/' + id, {method: 'DELETE'});
   TEAMS = await api('/api/teams'); renderTeams();
 }
+async function editTeam(team) {
+  const name = prompt('Teamname:', team.name);
+  if (name === null || !name.trim()) return;
+  const klasse = prompt('Klasse:', team.klasse || '');
+  if (klasse === null) return;
+  const sport = prompt('Sportart:', team.sport || '');
+  if (sport === null) return;
+  await api(`/api/teams/${team.id}`, {method: 'PUT', body: {
+    name: name.trim(), klasse: klasse.trim(), sport: sport.trim(),
+    color: team.color || '#2563eb', emoji: team.emoji || '🏅'
+  }});
+  TEAMS = await api('/api/teams'); renderTeams();
+}
 async function uploadLogo(id, input) {
   if (!input.files.length) return;
   const fd = new FormData();
@@ -186,6 +199,7 @@ function renderTeams() {
         <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${esc(t.color)};vertical-align:middle"></span></p>
       ${t.logo ? `<img class="team-image" src="/logos/${esc(t.logo)}" alt="Bild von ${esc(t.name)}">` : ''}
       ${canWrite() ? `<div class="actions">
+        <button class="btn ghost small" onclick="editTeam(${JSON.stringify(t).replace(/"/g, '&quot;')})">✏️ Bearbeiten</button>
         <label class="btn ghost small">🖼️ Logo hochladen
           <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(${t.id}, this)"></label>
         ${t.logo ? `<button class="btn ghost small" onclick="removeLogo(${t.id})">Bild entfernen</button>` : ''}
