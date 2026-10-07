@@ -49,13 +49,19 @@
       <h2>👥 Teams & Klassen</h2>
       <div class="card form-card" id="teamForm">
         <h3>➕ Neues Team</h3>
-        <div class="grid5">
+        <div class="grid5 team-create-grid">
           <input id="tName" placeholder="Name, z. B. Löwen 7a 🦁">
           <input id="tKlasse" placeholder="Klasse, z. B. 7a">
           <input id="tSport" placeholder="Sportart ⚽">
           <input id="tEmoji" placeholder="Emoji 🦅" maxlength="4">
           <input id="tColor" type="color" value="#2563eb" title="Team-Farbe">
         </div>
+        <label class="upload-dropzone" for="tLogo">
+          <span class="upload-icon">🖼️</span>
+          <span><b>Team-Bild auswählen</b><small>PNG, JPG, WEBP oder GIF · optional</small></span>
+          <input id="tLogo" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" onchange="previewTeamLogo(this)">
+        </label>
+        <div id="tLogoPreview" class="team-create-preview hidden"></div>
         <button class="btn primary" onclick="addTeam()">Team anlegen ✅</button>
       </div>
       <div id="teamList" class="cards"></div>

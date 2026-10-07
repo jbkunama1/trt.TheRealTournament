@@ -100,6 +100,15 @@ label.hint-check { display: inline-flex; align-items: center; gap: .4rem; font-w
 label.hint-check input { width: auto; }
 
 .grid5 { display: grid; grid-template-columns: 2fr 1fr 1.4fr 1fr 70px; gap: .6rem; margin-bottom: .8rem; }
+.upload-dropzone { display: flex; align-items: center; gap: .8rem; width: 100%; margin: .2rem 0 .8rem; padding: .8rem 1rem;
+  border: 1px dashed var(--muted); border-radius: 12px; color: var(--text); cursor: pointer; background: rgba(0,0,0,.12); }
+.upload-dropzone:hover { border-color: var(--accent); background: rgba(255,255,255,.08); }
+.upload-dropzone input { display: none; }
+.upload-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--accent); font-size: 1.2rem; }
+.upload-dropzone small { display: block; color: var(--muted); margin-top: .15rem; }
+.team-create-preview { display: flex; align-items: center; gap: .7rem; margin: -.2rem 0 .8rem; color: var(--muted); font-size: .85rem; }
+.team-create-preview img { width: 58px; height: 58px; object-fit: cover; border-radius: 12px; border: 2px solid var(--accent); }
+.team-image { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; margin: .5rem 0 1rem; border: 1px solid rgba(255,255,255,.16); }
 .grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: .6rem; margin-bottom: .8rem; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin-bottom: .8rem; }
 @media (max-width: 720px) { .grid5, .grid4, .grid3 { grid-template-columns: 1fr; } }

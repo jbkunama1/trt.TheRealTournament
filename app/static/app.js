@@ -112,10 +112,33 @@ function teamChip(t) {
 async function addTeam() {
   const name = $('tName').value.trim();
   if (!name) return alert('⚠️ Name fehlt');
-  await api('/api/teams', {method: 'POST', body: {name, klasse: $('tKlasse').value.trim(),
+  const created = await api('/api/teams', {method: 'POST', body: {name, klasse: $('tKlasse').value.trim(),
     sport: $('tSport').value.trim(), emoji: $('tEmoji').value.trim() || '🏅', color: $('tColor').value}});
-  ['tName','tKlasse','tSport','tEmoji'].forEach(i => $(i).value = '');
+  const logo = $('tLogo').files[0];
+  if (logo) {
+    const fd = new FormData();
+    fd.append('file', logo);
+    await api(`/api/teams/${created.id}/logo`, {method: 'POST', body: fd});
+  }
+  ['tName','tKlasse','tSport','tEmoji','tLogo'].forEach(i => $(i).value = '');
+  $('tLogoPreview').innerHTML = '';
+  $('tLogoPreview').classList.add('hidden');
   TEAMS = await api('/api/teams'); renderTeams();
+}
+function previewTeamLogo(input) {
+  const preview = $('tLogoPreview');
+  const file = input.files[0];
+  if (!file) {
+    preview.innerHTML = '';
+    preview.classList.add('hidden');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    preview.innerHTML = `<img src="${reader.result}" alt="Vorschau Team-Bild"><span>${esc(file.name)}</span>`;
+    preview.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
 }
 async function delTeam(id) {
   if (!confirm('Team wirklich löschen? 🗑️')) return;
@@ -135,7 +158,7 @@ function renderTeams() {
       <h3>${esc(t.emoji)} ${esc(t.name)}</h3>
       <p class="meta" style="color:var(--muted)">🏫 ${esc(t.klasse || '-')} · ${esc(t.sport || '-')}
         <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${esc(t.color)};vertical-align:middle"></span></p>
-      ${t.logo ? `<img src="/logos/${esc(t.logo)}" style="max-height:60px;border-radius:8px;margin:.5rem 0">` : ''}
+      ${t.logo ? `<img class="team-image" src="/logos/${esc(t.logo)}" alt="Bild von ${esc(t.name)}">` : ''}
       ${canWrite() ? `<div class="actions">
         <label class="btn ghost small">🖼️ Logo hochladen
           <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(${t.id}, this)"></label>
