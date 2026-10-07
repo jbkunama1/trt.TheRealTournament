@@ -22,6 +22,27 @@ async function api(path, opts = {}) {
   }
   return res.json();
 }
+async function downloadFile(path, filename) {
+  try {
+    const res = await fetch(path, {headers: {'X-Token': TOKEN}});
+    if (res.status === 401) { showLogin(); throw new Error('Nicht angemeldet'); }
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(detail || `Download fehlgeschlagen (${res.status})`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    alert('⚠️ ' + error.message);
+  }
+}
 
 /* ---------- Login ---------- */
 function showLogin() {
@@ -152,6 +173,11 @@ async function uploadLogo(id, input) {
   await api(`/api/teams/${id}/logo`, {method: 'POST', body: fd});
   TEAMS = await api('/api/teams'); renderTeams();
 }
+async function removeLogo(id) {
+  if (!confirm('Team-Bild wirklich entfernen?')) return;
+  await api(`/api/teams/${id}/logo`, {method: 'DELETE'});
+  TEAMS = await api('/api/teams'); renderTeams();
+}
 function renderTeams() {
   $('teamList').innerHTML = TEAMS.map(t => `
     <div class="card">
@@ -162,6 +188,7 @@ function renderTeams() {
       ${canWrite() ? `<div class="actions">
         <label class="btn ghost small">🖼️ Logo hochladen
           <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(${t.id}, this)"></label>
+        ${t.logo ? `<button class="btn ghost small" onclick="removeLogo(${t.id})">Bild entfernen</button>` : ''}
         <button class="btn danger small" onclick="delTeam(${t.id})">🗑️</button>
       </div>` : ''}
     </div>`).join('') || '<p class="hint">Noch keine Teams angelegt 😅</p>';
@@ -224,6 +251,13 @@ async function openTour(id) {
   $('tList').classList.add('hidden');
   renderTourDetail();
 }
+async function setTourStatus(status) {
+  await api(`/api/tournaments/${CUR.id}/status`, {method: 'PATCH', body: {status}});
+  CUR = await api('/api/tournaments/' + CUR.id);
+  CUR.matches = await api(`/api/tournaments/${CUR.id}/matches`);
+  CUR.standings = await api(`/api/tournaments/${CUR.id}/standings`);
+  renderTourDetail();
+}
 
 function renderTourDetail() {
   const t = CUR, d = $('tDetail');
@@ -240,10 +274,12 @@ function renderTourDetail() {
   if (CUR.champion) html += `<div class="banner">🎉🏆 Turniersieger: ${teamChip(CUR.champion)} 🏆🎉</div>`;
 
   html += `<div class="actions">
-      <a class="btn" href="/api/tournaments/${t.id}/export.pdf">📄 PDF-Export</a>
-      <a class="btn" href="/api/tournaments/${t.id}/export.ics">📅 Kalender (.ics)</a>
-      <a class="btn" href="/api/tournaments/${t.id}/urkunden.pdf">🏅 Urkunden (Top 3)</a>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/export.pdf', 'turnier.pdf')">📄 PDF-Export</button>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/export.ics', 'turnier.ics')">📅 Kalender (.ics)</button>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/urkunden.pdf', 'urkunden.pdf')">🏅 Urkunden (Top 3)</button>
       ${canWrite() ? `<button class="btn ok" onclick="genPlan()">⚙️ Spielplan (neu) generieren</button>` : ''}
+      ${canWrite() && t.status !== 'entwurf' ? `<button class="btn ghost" onclick="setTourStatus('finalrunde')">🔥 Finalrunde</button>` : ''}
+      ${canWrite() && t.status !== 'beendet' ? `<button class="btn danger small" onclick="setTourStatus('beendet')">🏁 Beenden</button>` : ''}
     </div>`;
 
   // 📣 Öffentliche Ansicht (v1.1)
@@ -406,7 +442,7 @@ async function renderCalendar() {
     <div class="cal-item">
       <div class="date">📅 ${esc(m.date)}<br>⏰ ${esc(m.time || '')}</div>
       <div><b>${matchTitle(m)}</b><div class="meta">${sportEm(t.sport)} ${esc(t.name)} · ${esc(m.round_name)}${m.court ? ' · 🏟️ ' + esc(m.court) : ''}</div></div>
-      <a class="btn small ghost" href="/api/tournaments/${t.id}/export.ics">.ics ⬇️</a>
+      <button class="btn small ghost" onclick="downloadFile('/api/tournaments/${t.id}/export.ics', 'turnier.ics')">.ics ⬇️</button>
     </div>`).join('') : '<p class="hint">Noch keine terminierten Spiele 📅</p>';
   function matchTitle(m) {
     const f = id => (TEAMS.find(x => x.id === id) || {}).name || 'TBD';
