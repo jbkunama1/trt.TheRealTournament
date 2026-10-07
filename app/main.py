@@ -685,6 +685,11 @@ def upload_logo(tid: int, file: UploadFile = File(...), u=Depends(need("admin", 
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in (".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"):
         raise HTTPException(400, "Nur Bilddateien erlaubt (png/jpg/webp/gif/svg) ⚠️")
+    file.file.seek(0, os.SEEK_END)
+    size = file.file.tell()
+    file.file.seek(0)
+    if size > 10 * 1024 * 1024:
+        raise HTTPException(413, "Bild ist zu groß (maximal 10 MB) ⚠️")
     fname = f"logo_{tid}_{secrets.token_hex(4)}{ext}"
     with open(os.path.join(UPLOAD_DIR, fname), "wb") as fh:
         fh.write(file.file.read())
@@ -693,6 +698,24 @@ def upload_logo(tid: int, file: UploadFile = File(...), u=Depends(need("admin", 
     con.commit()
     con.close()
     return {"logo": fname}
+
+
+@app.delete("/api/teams/{tid}/logo")
+def delete_logo(tid: int, u=Depends(need("admin", "lehrer"))):
+    con = db()
+    row = con.execute("SELECT logo FROM teams WHERE id=?", (tid,)).fetchone()
+    if not row:
+        con.close()
+        raise HTTPException(404, "Team nicht gefunden")
+    if row["logo"]:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, row["logo"]))
+        except FileNotFoundError:
+            pass
+    con.execute("UPDATE teams SET logo=NULL WHERE id=?", (tid,))
+    con.commit()
+    con.close()
+    return {"ok": True}
 
 
 # ---------- Turniere ----------
@@ -748,6 +771,21 @@ def edit_tournament(tid: int, inp: TournamentIn, u=Depends(need("admin", "lehrer
     con.commit()
     con.close()
     return {"ok": True}
+
+
+@app.patch("/api/tournaments/{tid}/status")
+def set_tournament_status(tid: int, inp: dict, u=Depends(need("admin", "lehrer"))):
+    status = inp.get("status")
+    if status not in ("entwurf", "laeuft", "finalrunde", "beendet"):
+        raise HTTPException(400, "Ungültiger Turnierstatus")
+    con = db()
+    if not con.execute("SELECT 1 FROM tournaments WHERE id=?", (tid,)).fetchone():
+        con.close()
+        raise HTTPException(404, "Turnier nicht gefunden")
+    con.execute("UPDATE tournaments SET status=? WHERE id=?", (status, tid))
+    con.commit()
+    con.close()
+    return {"ok": True, "status": status}
 
 
 @app.delete("/api/tournaments/{tid}")

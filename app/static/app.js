@@ -22,6 +22,27 @@ async function api(path, opts = {}) {
   }
   return res.json();
 }
+async function downloadFile(path, filename) {
+  try {
+    const res = await fetch(path, {headers: {'X-Token': TOKEN}});
+    if (res.status === 401) { showLogin(); throw new Error('Nicht angemeldet'); }
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(detail || `Download fehlgeschlagen (${res.status})`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    alert('⚠️ ' + error.message);
+  }
+}
 
 /* ---------- Login ---------- */
 function showLogin() {
@@ -145,11 +166,29 @@ async function delTeam(id) {
   await api('/api/teams/' + id, {method: 'DELETE'});
   TEAMS = await api('/api/teams'); renderTeams();
 }
+async function editTeam(team) {
+  const name = prompt('Teamname:', team.name);
+  if (name === null || !name.trim()) return;
+  const klasse = prompt('Klasse:', team.klasse || '');
+  if (klasse === null) return;
+  const sport = prompt('Sportart:', team.sport || '');
+  if (sport === null) return;
+  await api(`/api/teams/${team.id}`, {method: 'PUT', body: {
+    name: name.trim(), klasse: klasse.trim(), sport: sport.trim(),
+    color: team.color || '#2563eb', emoji: team.emoji || '🏅'
+  }});
+  TEAMS = await api('/api/teams'); renderTeams();
+}
 async function uploadLogo(id, input) {
   if (!input.files.length) return;
   const fd = new FormData();
   fd.append('file', input.files[0]);
   await api(`/api/teams/${id}/logo`, {method: 'POST', body: fd});
+  TEAMS = await api('/api/teams'); renderTeams();
+}
+async function removeLogo(id) {
+  if (!confirm('Team-Bild wirklich entfernen?')) return;
+  await api(`/api/teams/${id}/logo`, {method: 'DELETE'});
   TEAMS = await api('/api/teams'); renderTeams();
 }
 function renderTeams() {
@@ -160,8 +199,10 @@ function renderTeams() {
         <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${esc(t.color)};vertical-align:middle"></span></p>
       ${t.logo ? `<img class="team-image" src="/logos/${esc(t.logo)}" alt="Bild von ${esc(t.name)}">` : ''}
       ${canWrite() ? `<div class="actions">
+        <button class="btn ghost small" onclick="editTeam(${JSON.stringify(t).replace(/"/g, '&quot;')})">✏️ Bearbeiten</button>
         <label class="btn ghost small">🖼️ Logo hochladen
           <input type="file" accept="image/*" style="display:none" onchange="uploadLogo(${t.id}, this)"></label>
+        ${t.logo ? `<button class="btn ghost small" onclick="removeLogo(${t.id})">Bild entfernen</button>` : ''}
         <button class="btn danger small" onclick="delTeam(${t.id})">🗑️</button>
       </div>` : ''}
     </div>`).join('') || '<p class="hint">Noch keine Teams angelegt 😅</p>';
@@ -224,6 +265,13 @@ async function openTour(id) {
   $('tList').classList.add('hidden');
   renderTourDetail();
 }
+async function setTourStatus(status) {
+  await api(`/api/tournaments/${CUR.id}/status`, {method: 'PATCH', body: {status}});
+  CUR = await api('/api/tournaments/' + CUR.id);
+  CUR.matches = await api(`/api/tournaments/${CUR.id}/matches`);
+  CUR.standings = await api(`/api/tournaments/${CUR.id}/standings`);
+  renderTourDetail();
+}
 
 function renderTourDetail() {
   const t = CUR, d = $('tDetail');
@@ -240,10 +288,12 @@ function renderTourDetail() {
   if (CUR.champion) html += `<div class="banner">🎉🏆 Turniersieger: ${teamChip(CUR.champion)} 🏆🎉</div>`;
 
   html += `<div class="actions">
-      <a class="btn" href="/api/tournaments/${t.id}/export.pdf">📄 PDF-Export</a>
-      <a class="btn" href="/api/tournaments/${t.id}/export.ics">📅 Kalender (.ics)</a>
-      <a class="btn" href="/api/tournaments/${t.id}/urkunden.pdf">🏅 Urkunden (Top 3)</a>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/export.pdf', 'turnier.pdf')">📄 PDF-Export</button>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/export.ics', 'turnier.ics')">📅 Kalender (.ics)</button>
+      <button class="btn" onclick="downloadFile('/api/tournaments/${t.id}/urkunden.pdf', 'urkunden.pdf')">🏅 Urkunden (Top 3)</button>
       ${canWrite() ? `<button class="btn ok" onclick="genPlan()">⚙️ Spielplan (neu) generieren</button>` : ''}
+      ${canWrite() && t.status !== 'entwurf' ? `<button class="btn ghost" onclick="setTourStatus('finalrunde')">🔥 Finalrunde</button>` : ''}
+      ${canWrite() && t.status !== 'beendet' ? `<button class="btn danger small" onclick="setTourStatus('beendet')">🏁 Beenden</button>` : ''}
     </div>`;
 
   // 📣 Öffentliche Ansicht (v1.1)
@@ -406,7 +456,7 @@ async function renderCalendar() {
     <div class="cal-item">
       <div class="date">📅 ${esc(m.date)}<br>⏰ ${esc(m.time || '')}</div>
       <div><b>${matchTitle(m)}</b><div class="meta">${sportEm(t.sport)} ${esc(t.name)} · ${esc(m.round_name)}${m.court ? ' · 🏟️ ' + esc(m.court) : ''}</div></div>
-      <a class="btn small ghost" href="/api/tournaments/${t.id}/export.ics">.ics ⬇️</a>
+      <button class="btn small ghost" onclick="downloadFile('/api/tournaments/${t.id}/export.ics', 'turnier.ics')">.ics ⬇️</button>
     </div>`).join('') : '<p class="hint">Noch keine terminierten Spiele 📅</p>';
   function matchTitle(m) {
     const f = id => (TEAMS.find(x => x.id === id) || {}).name || 'TBD';
