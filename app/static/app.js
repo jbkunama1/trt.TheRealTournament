@@ -25,6 +25,10 @@ async function api(path, opts = {}) {
 
 /* ---------- Login ---------- */
 function showLogin() {
+  if (location.pathname === '/admin/app') {
+    location.replace('/admin');
+    return;
+  }
   $('loginView').classList.remove('hidden');
   $('appView').classList.add('hidden');
 }
