@@ -505,6 +505,11 @@ class LoginIn(BaseModel):
     password: str
 
 
+class PasswordChangeIn(BaseModel):
+    current_password: str
+    new_password: str
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -528,6 +533,21 @@ def login(inp: LoginIn):
 def logout(x_token: str = Header(default=""), u=Depends(current_user)):
     con = db()
     con.execute("DELETE FROM sessions WHERE token=?", (x_token,))
+    con.commit()
+    con.close()
+    return {"ok": True}
+
+
+@app.put("/api/auth/me/password")
+def change_password(inp: PasswordChangeIn, x_token: str = Header(default=""), u=Depends(current_user)):
+    if len(inp.new_password) < 8:
+        raise HTTPException(400, "Das neue Passwort muss mindestens 8 Zeichen lang sein")
+    if hash_pw(inp.current_password, u["salt"]) != u["pw_hash"]:
+        raise HTTPException(400, "Aktuelles Passwort ist falsch")
+    salt = secrets.token_hex(8)
+    con = db()
+    con.execute("UPDATE users SET pw_hash=?, salt=? WHERE id=?",
+                (hash_pw(inp.new_password, salt), salt, u["id"]))
     con.commit()
     con.close()
     return {"ok": True}

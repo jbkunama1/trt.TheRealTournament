@@ -77,6 +77,19 @@ async function doLogout() {
   await api('/api/auth/logout', {method: 'POST'}).catch(() => {});
   TOKEN = ''; localStorage.removeItem('trt_token'); ME = null; showLogin();
 }
+async function changeMyPassword() {
+  const current = prompt('Aktuelles Passwort:');
+  if (current === null) return;
+  const next = prompt('Neues Passwort (mindestens 8 Zeichen):');
+  if (next === null) return;
+  const confirmation = prompt('Neues Passwort wiederholen:');
+  if (confirmation !== next) return alert('⚠️ Passwörter stimmen nicht überein');
+  await api('/api/auth/me/password', {
+    method: 'PUT',
+    body: {current_password: current, new_password: next}
+  });
+  alert('✅ Passwort geändert');
+}
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
 }
