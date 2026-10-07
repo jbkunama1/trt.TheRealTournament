@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de" data-theme="unsplash-stadium">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Login - TheRealTournament</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="admin-auth-page">
+<main class="admin-auth-shell">
+  <section class="admin-auth-card">
+    <a class="admin-back" href="/">← Zur Startseite</a>
+    <div class="admin-auth-logo">⚙️</div>
+    <p class="admin-kicker">GESCHÜTZTER BEREICH</p>
+    <h1>Admin Login</h1>
+    <p class="admin-auth-sub">Melde dich an, um Turniere zu verwalten und Ergebnisse einzutragen.</p>
+    <form id="adminLoginForm">
+      <label for="adminUser">Benutzername</label>
+      <input id="adminUser" autocomplete="username" required autofocus placeholder="z. B. admin">
+      <label for="adminPassword">Passwort</label>
+      <input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Passwort">
+      <button class="btn primary big" type="submit">Anmelden <span>→</span></button>
+      <p id="adminLoginError" class="err" role="alert"></p>
+    </form>
+  </section>
+</main>
+<script>
+const form = document.getElementById('adminLoginForm');
+const error = document.getElementById('adminLoginError');
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  error.textContent = '';
+  const button = form.querySelector('button');
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        username: document.getElementById('adminUser').value.trim(),
+        password: document.getElementById('adminPassword').value
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || 'Login fehlgeschlagen');
+    localStorage.setItem('trt_token', data.token);
+    window.location.assign('/admin/app');
+  } catch (loginError) {
+    error.textContent = '❌ ' + loginError.message;
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

@@ -1132,6 +1132,11 @@ def view_page(token: str):
 
 @app.get("/admin")
 def admin_page():
+    return FileResponse(os.path.join(BASE_DIR, "static", "admin-login.html"))
+
+
+@app.get("/admin/app")
+def admin_app_page():
     return FileResponse(os.path.join(BASE_DIR, "static", "index.html"))
 
 

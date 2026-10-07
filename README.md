@@ -45,7 +45,8 @@ docker run -d \
 Die Startseite bietet getrennte Bereiche:
 
 - `/view` zeigt nur laufende bzw. in der Finalrunde befindliche Turniere zur Auswahl.
-- `/admin` öffnet die Verwaltung; Daten und Aktionen sind nur nach Login mit einem TRT-Benutzer verfügbar.
+- `/admin` öffnet zuerst eine eigene Login-Seite; die Verwaltung liegt danach unter `/admin/app`.
+- Daten und Aktionen sind nur nach Login mit einem TRT-Benutzer verfügbar.
 
 ## 🐙 Portainer-Stack
 
