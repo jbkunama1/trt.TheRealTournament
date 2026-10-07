@@ -29,6 +29,12 @@ h1 { font-size: 1.7rem; margin-bottom: .2rem; }
 h1 span { background: linear-gradient(90deg,#3b82f6,#ffd60a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .meta { color: #9db4d4; margin-bottom: 1rem; }
 .banner { background: linear-gradient(90deg,#ffd60a,#fbbf24); color: #111; font-weight: 800; font-size: 1.3rem; text-align: center; border-radius: 14px; padding: 1rem; margin: 1rem 0; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.view-tools { display:flex; justify-content:flex-end; gap:.5rem; margin-bottom:.5rem; }
+.view-btn { border:1px solid #b9c7d6; border-radius:999px; padding:.45rem .8rem; color:#eaf2ff; background:#07111fcc; cursor:pointer; }
+.next-match { display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center; margin:1rem 0; padding:1rem 1.2rem; border:1px solid #facc15aa; border-radius:16px; background:#0b2545cc; box-shadow:0 10px 30px #0005; text-align:center; }
+.next-match .label { grid-column:1/-1; color:#facc15; font-size:.8rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.next-match .team { font-size:clamp(1.1rem,3vw,1.8rem); font-weight:800; }
+.next-match .countdown { color:#f8fafc; font-size:clamp(1.3rem,4vw,2.3rem); font-weight:800; }
 .round { color: #ffd60a; font-weight: 700; margin: 1rem 0 .4rem; font-size: 1.05rem; }
 .match { display: grid; grid-template-columns: 1fr auto 1fr; gap: .8rem; align-items: center; background: rgba(8,25,52,.78); border-radius: 12px; padding: .7rem 1rem; margin: .35rem 0;
   border: 1px solid rgba(255,255,255,.1); border-left: 4px solid #3b82f6; box-shadow: 0 6px 18px rgba(0,0,0,.22); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -52,9 +58,11 @@ footer { text-align: center; color: #9db4d4; font-size: .8rem; margin-top: 2rem;
 </head>
 <body>
 <div class="wrap">
+  <div class="view-tools"><button class="view-btn" id="fullscreen" type="button">⛶ Vollbild</button></div>
   <h1>&#127942; <span id="tName">Lade Turnier ...</span></h1>
   <p class="meta" id="tMeta"><span class="live"></span>Live-Ansicht &middot; aktualisiert alle 10 s</p>
   <div id="champ"></div>
+  <div id="nextMatch"></div>
   <div class="two">
     <div><h2>&#127918; Spiele</h2><div id="matches">...</div></div>
     <div><h2>&#128202; Tabelle</h2><div id="table"></div></div>
@@ -64,6 +72,14 @@ footer { text-align: center; color: #9db4d4; font-size: .8rem; margin-top: 2rem;
 <script>
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const token = location.pathname.split('/').pop();
+const nextMatch = document.getElementById('nextMatch');
+
+document.getElementById('fullscreen').addEventListener('click', async () => {
+  try {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (error) {}
+});
 
 fetch('/api/settings/theme').then(r => r.json()).then(d => {
   document.body.dataset.theme = d.theme || 'gradient-blue';
@@ -94,6 +110,22 @@ function render(d) {
     ? '<div class="banner">&#127881;&#127942; Turniersieger: ' + esc(d.champion.emoji || '') + ' ' + esc(d.champion.name) + ' &#127942;&#127881;</div>' : '';
 
   const ms = d.matches || [];
+  const openMatches = ms.filter(m => m.status === 'offen' && m.date && m.time)
+    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
+  const upcoming = openMatches[0];
+  if (upcoming) {
+    const when = new Date(`${upcoming.date}T${upcoming.time}`);
+    const remaining = Math.max(0, when.getTime() - Date.now());
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    const home = upcoming.home_name ? `${upcoming.home_emoji || ''} ${upcoming.home_name}` : '❔ TBD';
+    const away = upcoming.away_name ? `${upcoming.away_emoji || ''} ${upcoming.away_name}` : '❔ TBD';
+    nextMatch.innerHTML = `<div class="next-match"><div class="label">Nächstes Spiel · ${esc(upcoming.round_name || '')}</div>
+      <div class="team">${esc(home)}</div><div class="countdown">${remaining ? `in ${minutes}:${String(seconds).padStart(2, '0')}` : 'Jetzt'}</div>
+      <div class="team">${esc(away)}</div></div>`;
+  } else {
+    nextMatch.innerHTML = '';
+  }
   let html = '', last = null;
   for (const m of ms) {
     const isP3 = m.group_name === 'Platz3';
