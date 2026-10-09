@@ -466,16 +466,38 @@ def init_db():
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
     if not con.execute("SELECT 1 FROM users").fetchone():
         create_user(con, ADMIN_USER, ADMIN_PASSWORD, "admin", "Admin 👑")
-        if SEED_DEMO:
-            demo = [("Löwen 7a 🦁", "7a", "Fußball", "#eab308", "🦁"),
-                    ("Tiger 7b 🐯", "7b", "Fußball", "#f97316", "🐯"),
-                    ("Adler 8a 🦅", "8a", "Volleyball", "#3b82f6", "🦅"),
-                    ("Haie 8b 🦈", "8b", "Volleyball", "#06b6d4", "🦈"),
-                    ("Falken 9a 🪶", "9a", "Basketball", "#8b5cf6", "🪶"),
-                    ("Bären 9b 🐻", "9b", "Basketball", "#ef4444", "🐻")]
-            for name, kl, sp, col, em in demo:
-                con.execute("INSERT INTO teams(name,klasse,sport,color,emoji) VALUES(?,?,?,?,?)",
-                            (name, kl, sp, col, em))
+    if SEED_DEMO and not con.execute("SELECT 1 FROM tournaments").fetchone():
+        demo = [("Blitz 7A", "7A", "#facc15", "⚡"),
+                ("Adler 7B", "7B", "#60a5fa", "🦅"),
+                ("Löwen 8A", "8A", "#fb923c", "🦁"),
+                ("Tiger 8B", "8B", "#f97316", "🐯"),
+                ("Falken 9A", "9A", "#a78bfa", "🪶"),
+                ("Wölfe 9B", "9B", "#94a3b8", "🐺"),
+                ("Bären 10A", "10A", "#ef4444", "🐻"),
+                ("Drachen 10B", "10B", "#34d399", "🐉")]
+        team_ids = []
+        for name, klasse, color, emoji in demo:
+            team_ids.append(con.execute(
+                "INSERT INTO teams(name,klasse,sport,color,emoji) VALUES(?,?,?,?,?)",
+                (name, klasse, "Fußball", color, emoji)).lastrowid)
+        tid = con.execute(
+            """INSERT INTO tournaments(name,sport,format,start_date,end_date,
+               points_win,points_draw,num_groups,status,public_token)
+               VALUES(?,?,?,?,?,?,?,?,?,?)""",
+            ("Demo-Cup 2026", "Fußball", "gruppen", datetime.now().strftime("%Y-%m-%d"),
+             datetime.now().strftime("%Y-%m-%d"), 3, 1, 2, "laeuft",
+             secrets.token_urlsafe(8))).lastrowid
+        for team_id in team_ids:
+            con.execute("INSERT INTO tournament_teams(tournament_id,team_id) VALUES(?,?)",
+                        (tid, team_id))
+        gen_tournament(con, tid)
+        match_rows = con.execute(
+            "SELECT id FROM matches WHERE tournament_id=? AND status='offen' ORDER BY id", (tid,)).fetchall()
+        for i, match in enumerate(match_rows):
+            con.execute(
+                "UPDATE matches SET date=?, time=?, court=? WHERE id=?",
+                (datetime.now().strftime("%Y-%m-%d"), f"{9 + i // 2:02d}:{(i % 2) * 30:02d}",
+                 f"Platz {(i % 2) + 1}", match["id"]))
     con.commit()
     con.close()
 
