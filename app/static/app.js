@@ -247,6 +247,7 @@ function renderTours() {
       <label class="hint">Gruppen (nur bei Gruppenmodus) 🌍
         <input id="nGroups" type="number" value="2" min="2" max="8" style="max-width:90px"></label>
       <button class="btn primary" onclick="addTournament()">Turnier anlegen 🚀</button>
+      <button class="btn" onclick="openWizard()">🧙 Assistent starten</button>
     </div>`;
   html += `<div class="cards">`;
   html += TOURS.map(t => `
@@ -258,6 +259,37 @@ function renderTours() {
     </div>`).join('') || '<p class="hint">Noch keine Turniere – leg los! 💪</p>';
   $('tList').innerHTML = html + '</div>';
 }
+
+/* ---------- Wizard ---------- */
+let wizardState = {step:0, data:{}};
+const wizardSteps = [
+  {title:'Sportart wählen', render:()=>`<h4>Sportart</h4><input id='wizSport' placeholder='z.B. Fußball'/>`},
+  {title:'Anzahl Teams', render:()=>`<h4>Anzahl Teams</h4><input id='wizTeams' type='number' min='2' placeholder='z.B. 8'/>`},
+  {title:'Turnierformat', render:()=>`<h4>Format</h4><select id='wizFormat'>${Object.entries(FORMAT_LABEL).map(([k,v])=>`<option value='${k}'>${v}</option>`).join('')}</select>`},
+  {title:'Turniername', render:()=>`<h4>Name</h4><input id='wizName' placeholder='z.B. Fußball Turnier 2024'/>`},
+  {title:'Termine', render:()=>`<h4>Start- und Enddatum</h4><label>Start <input id='wizStart' type='date'/></label><br/><label>Ende <input id='wizEnd' type='date'/></label>`},
+  {title:'Punkte', render:()=>`<h4>Punkte für Sieg / Unentschieden</h4><input id='wizPW' type='number' min='1' value='3'/> / <input id='wizPD' type='number' min='0' value='1'/>`},
+  {title:'Gruppen (bei Gruppenmodus)', render:()=>`<h4>Anzahl Gruppen</h4><input id='wizGroups' type='number' min='2' max='8' value='2'/>`},
+  {title:'Zusammenfassung', render:()=>`<div class='wiz-summary' id='wizSummary'></div>`}
+];
+function openWizard(){wizardState={step:0,data:{}};document.getElementById('wizOverlay').classList.remove('hidden');renderWizardStep();}
+function closeWizard(){document.getElementById('wizOverlay').classList.add('hidden');}
+function renderWizardStep(){const step=wizardState.step;const stepInfo=wizardSteps[step];document.getElementById('wizBody').innerHTML=stepInfo.render();document.getElementById('wizPrev').style.display=step===0?'none':'inline-block';document.getElementById('wizNext').classList.toggle('hidden',step===wizardSteps.length-1);document.getElementById('wizCreate').classList.toggle('hidden',step!==wizardSteps.length-1);document.getElementById('wizBar').style.width=`${(step/(wizardSteps.length-1))*100}%`;if(step===wizardSteps.length-1){populateSummary();}}
+function wizardNext(){if(!collectStepData())return;wizardState.step++;renderWizardStep();}
+function wizardPrev(){wizardState.step--;renderWizardStep();}
+function collectStepData(){const s=wizardState.step;switch(s){case 0: wizardState.data.sport=document.getElementById('wizSport').value.trim();if(!wizardState.data.sport) return alert('Sport fehlt');break;case 1: wizardState.data.teamCount=parseInt(document.getElementById('wizTeams').value);if(isNaN(wizardState.data.teamCount)||wizardState.data.teamCount<2) return alert('Mind. 2 Teams');break;case 2: wizardState.data.format=document.getElementById('wizFormat').value;break;case 3: wizardState.data.name=document.getElementById('wizName').value.trim()||'Neues Turnier';break;case 4: wizardState.data.start_date=document.getElementById('wizStart').value;wizardState.data.end_date=document.getElementById('wizEnd').value;break;case 5: wizardState.data.points_win=parseInt(document.getElementById('wizPW').value)||3;wizardState.data.points_draw=parseInt(document.getElementById('wizPD').value)||1;break;case 6: if(wizardState.data.format==='gruppen'){wizardState.data.num_groups=parseInt(document.getElementById('wizGroups').value)||2;} else {wizardState.data.num_groups=2;} break;}
+return true;}
+function populateSummary(){const d=wizardState.data;const html=`<h4>Überblick</h4><p><strong>Name:</strong> ${esc(d.name)}</p><p><strong>Sport:</strong> ${esc(d.sport)}</p><p><strong>Format:</strong> ${FORMAT_LABEL[d.format]||d.format}</p><p><strong>Teams:</strong> ${d.teamCount}</p><p><strong>Start:</strong> ${d.start_date||'—'} – <strong>Ende:</strong> ${d.end_date||'—'}</p><p><strong>Punkte:</strong> Sieg ${d.points_win}, Unentsch. ${d.points_draw}</p>${d.format==='gruppen'?`<p><strong>Gruppen:</strong> ${d.num_groups}</p>`:''}`;document.getElementById('wizSummary').innerHTML=html;}
+function wizardCreate(){if(!collectStepData())return;const p=wizardState.data;addTournamentPayload({name:p.name,sport:p.sport,format:p.format,start_date:p.start_date,end_date:p.end_date,points_win:p.points_win,points_draw:p.points_draw,num_groups:p.num_groups||2});closeWizard();}
+/* Remove old prompt wizard */
+function wizardAddTournament(){/* deprecated */}
+
+async function addTournamentPayload(payload) {
+  await api('/api/tournaments', {method: 'POST', body: payload});
+  TOURS = await api('/api/tournaments');
+  renderTours();
+}
+
 
 async function addTournament() {
   const name = $('nName').value.trim();

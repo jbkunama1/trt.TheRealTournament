@@ -177,6 +177,18 @@ tr:first-child td { font-weight: 800; background: rgba(74,222,128,.12); }
 .banner { background: linear-gradient(90deg, var(--accent2), #fbbf24); color: #000; font-weight: 800; padding: 1rem 1.4rem; border-radius: var(--radius); margin: 1rem 0; font-size: 1.2rem; text-align: center; box-shadow: var(--shadow); }
 .hint { color: var(--muted); margin-bottom: .8rem; }
 .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; }
+.wiz-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(2,6,23,.62);backdrop-filter:blur(6px)}
+.wiz-card{width:min(640px,100%);max-height:90vh;overflow:auto;background:var(--card);border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.45);padding:1.2rem}
+.wiz-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.wiz-progress{height:6px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin-bottom:1rem}
+.wiz-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.25s}
+.wiz-step h4{margin:.2rem 0 .6rem}
+.wiz-choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem}
+.wiz-choice{padding:.8rem;border-radius:14px;border:2px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18);cursor:pointer;text-align:center;font-weight:700}
+.wiz-choice.active{border-color:var(--accent);background:rgba(255,255,255,.08);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.wiz-teamlist{max-height:220px;overflow:auto;display:grid;gap:.4rem;margin-top:.4rem}
+.wiz-foot{display:flex;gap:.6rem;margin-top:1rem;align-items:center}
+.wiz-summary{background:rgba(0,0,0,.18);border-radius:12px;padding:.8rem;border:1px solid rgba(255,255,255,.1)}
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
 @media (max-width: 850px) { .two-col { grid-template-columns: 1fr; } }
 footer { text-align: center; color: var(--muted); padding: 2rem 0 1.5rem; font-size: .85rem; }

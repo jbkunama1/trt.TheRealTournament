@@ -115,6 +115,24 @@
   <footer>🏆 TheRealTournament · selbstgehostet · <span id="year"></span></footer>
 </div>
 
+<!-- 🧙 Wizard -->
+<div id="wizOverlay" class="wiz-overlay hidden" onclick="if(event.target===this)closeWizard()">
+  <div class="wiz-card">
+    <div class="wiz-head">
+      <h3>🧙 Turnier-Assistent</h3>
+      <button class="btn ghost small" onclick="closeWizard()">✕</button>
+    </div>
+    <div class="wiz-progress"><div id="wizBar" class="wiz-bar"></div></div>
+    <div id="wizBody"></div>
+    <div class="wiz-foot">
+      <button class="btn ghost" id="wizPrev" onclick="wizardPrev()">⬅️ Zurück</button>
+      <div style="flex:1"></div>
+      <button class="btn primary" id="wizNext" onclick="wizardNext()">Weiter ➡️</button>
+      <button class="btn primary hidden" id="wizCreate" onclick="wizardCreate()">🚀 Turnier erstellen</button>
+    </div>
+  </div>
+</div>
+
 <script src="/static/app.js"></script>
 </body>
 </html>
