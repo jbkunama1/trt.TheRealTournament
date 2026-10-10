@@ -1,5 +1,7 @@
 # 🏆 TheRealTournament – Portainer/Compose-Stack
 # Image wird via GitHub Action gebaut und nach ghcr.io gepusht.
+# Werte kommen aus den Stack-Umgebungsvariablen (Portainer: "Environment variables")
+# oder aus einer .env-Datei neben dieser Datei.
 services:
   trt:
     image: ghcr.io/jbkunama1/trt-therealtournament:latest
@@ -10,10 +12,10 @@ services:
     volumes:
       - trt_data:/data            # SQLite-DB + hochgeladene Team-Logos
     environment:
-      ADMIN_USER: admin
-      ADMIN_PASSWORD: changeme    # ⚠️ nur beim ersten Start relevant – danach ändern!
-      SEED_DEMO: "true"           # "false" = keine Demo-Teams
-      TZ: Europe/Berlin
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD fehlt in den Stack-Umgebungsvariablen}
+      SEED_DEMO: ${SEED_DEMO:-true}   # "false" = keine Demo-Teams
+      TZ: ${TZ:-Europe/Berlin}
     networks:
       - highfishNetwork
 
