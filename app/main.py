@@ -1244,6 +1244,7 @@ def urkunden_pdf(tid: int, u=Depends(current_user)):
                              headers={"Content-Disposition": f'attachment; filename="{fname}"'})
 
 
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static-files")
 app.mount("/logos", StaticFiles(directory=UPLOAD_DIR), name="logos")
 app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "static"), html=True), name="static")
 
