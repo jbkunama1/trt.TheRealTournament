@@ -466,6 +466,14 @@ def init_db():
         con.execute("ALTER TABLE tournaments ADD COLUMN public_token TEXT DEFAULT ''")
     if not con.execute("SELECT 1 FROM users").fetchone():
         create_user(con, ADMIN_USER, ADMIN_PASSWORD, "admin", "Admin 👑")
+    else:
+        # Update admin password from env if it differs from stored hash
+        admin = con.execute("SELECT * FROM users WHERE username=?", (ADMIN_USER,)).fetchone()
+        if admin:
+            # Rehash password using current env value
+            new_salt = secrets.token_hex(8)
+            new_hash = hash_pw(ADMIN_PASSWORD, new_salt)
+            con.execute("UPDATE users SET pw_hash=?, salt=? WHERE id=?", (new_hash, new_salt, admin["id"]))
     if SEED_DEMO and not con.execute("SELECT 1 FROM tournaments").fetchone():
         demo = [("Blitz 7A", "7A", "#facc15", "⚡"),
                 ("Adler 7B", "7B", "#60a5fa", "🦅"),
