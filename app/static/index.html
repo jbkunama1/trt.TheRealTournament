@@ -6,6 +6,7 @@
 <title>TheRealTournament 🏆</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
 <link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/admin.css">
 </head>
 <body class="admin-app">
 
@@ -30,10 +31,11 @@
       <button class="tab" data-tab="teams" onclick="showTab('teams')">👥 Teams</button>
       <button class="tab" data-tab="kalender" onclick="showTab('kalender')">📅 Kalender</button>
       <button class="tab admin-only" data-tab="users" onclick="showTab('users')">⚙️ Benutzer</button>
+      <button class="tab admin-only" data-tab="design" onclick="showTab('design')">🎨 Design</button>
     </nav>
     <div class="head-right">
       <span id="meBadge" class="me"></span>
-      <button class="btn ghost" onclick="changeMyPassword()">🔑 Passwort ändern</button>
+      <button class="btn ghost" onclick="changeMyPassword()">🔑 Passwort</button>
       <button class="btn ghost" onclick="doLogout()">Abmelden 🚪</button>
     </div>
   </header>
@@ -47,9 +49,9 @@
 
     <!-- TEAMS -->
     <section id="tab-teams" class="tabpane hidden">
-      <h2>👥 Teams & Klassen</h2>
-      <div class="card form-card" id="teamForm">
-        <h3>➕ Neues Team</h3>
+      <div class="page-head"><div><h2>👥 Teams & Klassen</h2></div></div>
+      <details class="card form-card collapsible" id="teamForm">
+        <summary>➕ Neues Team anlegen</summary>
         <div class="grid5 team-create-grid">
           <input id="tName" placeholder="Name, z. B. Löwen 7a 🦁">
           <input id="tKlasse" placeholder="Klasse, z. B. 7a">
@@ -64,22 +66,22 @@
         </label>
         <div id="tLogoPreview" class="team-create-preview hidden"></div>
         <button class="btn primary" onclick="addTeam()">Team anlegen ✅</button>
-      </div>
+      </details>
       <div id="teamList" class="cards"></div>
     </section>
 
     <!-- KALENDER -->
     <section id="tab-kalender" class="tabpane hidden">
-      <h2>📅 Kalender & Termine</h2>
+      <div class="page-head"><div><h2>📅 Kalender & Termine</h2></div></div>
       <div id="calList"></div>
     </section>
 
     <!-- BENUTZER -->
     <section id="tab-users" class="tabpane hidden">
-      <h2>⚙️ Benutzerverwaltung</h2>
-      <p class="hint">Rollen: <b>admin</b> 👑 (alles) · <b>lehrer</b> 🧑‍🏫 (Turniere & Ergebnisse) · <b>leser</b> 👀 (nur Ansicht)</p>
-      <div class="card form-card">
-        <h3>➕ Neuer Benutzer</h3>
+      <div class="page-head"><div><h2>⚙️ Benutzerverwaltung</h2>
+        <p class="hint">Rollen: <b>admin</b> 👑 (alles) · <b>lehrer</b> 🧑‍🏫 (Turniere & Ergebnisse) · <b>leser</b> 👀 (nur Ansicht)</p></div></div>
+      <details class="card form-card collapsible">
+        <summary>➕ Neuer Benutzer</summary>
         <div class="grid4">
           <input id="uName" placeholder="Benutzername">
           <input id="uDisp" placeholder="Anzeigename 😀">
@@ -87,12 +89,18 @@
           <select id="uRole"><option value="leser">👀 leser</option><option value="lehrer">🧑‍🏫 lehrer</option><option value="admin">👑 admin</option></select>
         </div>
         <button class="btn primary" onclick="addUser()">Anlegen ✅</button>
-      </div>
+      </details>
+      <div id="userList" class="cards"></div>
+    </section>
+
+    <!-- DESIGN -->
+    <section id="tab-design" class="tabpane hidden">
+      <div class="page-head"><div><h2>🎨 Design</h2>
+        <p class="hint">Hintergrund-Theme wählen. Die Vorschau gilt sofort, mit „Speichern“ für alle Nutzer.</p></div></div>
       <div class="card form-card">
-        <h3>🎨 Design-Einstellungen</h3>
-        <label class="hint" for="globalThemeSel">Globales Hintergrund-Theme</label>
+        <div id="themeSwatches" class="swatches"></div>
         <div class="actions">
-          <select id="globalThemeSel" onchange="previewTheme(this.value)">
+          <select id="globalThemeSel" class="design-select" onchange="previewTheme(this.value)">
             <option value="unsplash-stadium">🏟️ Flutlicht-Stadion</option>
             <option value="unsplash-football">⚽ Fußballplatz</option>
             <option value="unsplash-basketball">🏀 Basketball</option>
@@ -104,11 +112,10 @@
             <option value="unsplash-field">🌿 Spielfeld</option>
             <option value="unsplash-neon">💜 Neon Sport</option>
           </select>
-          <button class="btn primary" onclick="saveGlobalTheme()">💾 Speichern</button>
+          <button class="btn primary" onclick="saveGlobalTheme()">💾 Für alle speichern</button>
         </div>
         <p class="hint">Die Auswahl wird in SQLite gespeichert und gilt für alle Browser-Nutzer.</p>
       </div>
-      <div id="userList" class="cards"></div>
     </section>
   </main>
 
@@ -134,5 +141,6 @@
 </div>
 
 <script src="/static/app.js"></script>
+<script src="/static/admin-ui.js"></script>
 </body>
 </html>

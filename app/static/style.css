@@ -1,32 +1,44 @@
-/* TheRealTournament Styles (v1.3 - Mesh-Gradients + Glas, 100% lokal) */
+/* TheRealTournament Styles (v1.5 - lokale Verlaeufe, keine externen Bilder) */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --radius: 16px; --shadow: 0 10px 34px rgba(0,0,0,.32); --font: "Segoe UI", system-ui, -apple-system, sans-serif; --bg-image: none; }
+:root { --radius: 16px; --shadow: 0 10px 34px rgba(0,0,0,.32); --font: "Segoe UI", system-ui, -apple-system, sans-serif; --bg-color: #0b1220; }
 
-[data-theme="ksc"], [data-theme="gradient-blue"] { --card:rgba(22,52,95,.72); --accent:#3b82f6; --accent2:#ffd60a; --text:#eaf2ff; --muted:#9db4d4; --ok:#22c55e;
+[data-theme="ksc"], [data-theme="gradient-blue"] { --card:rgba(22,52,95,.72); --accent:#3b82f6; --accent2:#ffd60a; --text:#eaf2ff; --muted:#9db4d4; --ok:#22c55e; --bg-color:#0b2545;
   --body-bg: radial-gradient(1100px 620px at 88% -12%, rgba(255,214,10,.20), transparent 60%), radial-gradient(900px 700px at -12% 112%, rgba(59,130,246,.32), transparent 60%), linear-gradient(160deg, #0b2545 0%, #13315c 55%, #1d4e89 100%); }
-[data-theme="sunset"], [data-theme="gradient-sunset"] { --card:rgba(75,37,100,.72); --accent:#fb7185; --accent2:#fbbf24; --text:#fff1f2; --muted:#d8b4d4; --ok:#4ade80;
+[data-theme="sunset"], [data-theme="gradient-sunset"] { --card:rgba(75,37,100,.72); --accent:#fb7185; --accent2:#fbbf24; --text:#fff1f2; --muted:#d8b4d4; --ok:#4ade80; --bg-color:#3d1d5c;
   --body-bg: radial-gradient(1000px 600px at 92% -10%, rgba(251,191,36,.30), transparent 62%), radial-gradient(850px 700px at -10% 110%, rgba(244,63,94,.35), transparent 62%), linear-gradient(150deg, #3d1d5c 0%, #5e2b72 50%, #93335e 100%); }
-[data-theme="wald"], [data-theme="gradient-forest"] { --card:rgba(23,69,44,.72); --accent:#4ade80; --accent2:#facc15; --text:#e8fff0; --muted:#a7cfb5; --ok:#22c55e;
+[data-theme="wald"], [data-theme="gradient-forest"] { --card:rgba(23,69,44,.72); --accent:#4ade80; --accent2:#facc15; --text:#e8fff0; --muted:#a7cfb5; --ok:#22c55e; --bg-color:#0c2b1e;
   --body-bg: radial-gradient(1000px 640px at 90% -10%, rgba(74,222,128,.22), transparent 60%), radial-gradient(900px 680px at -10% 112%, rgba(20,83,45,.55), transparent 62%), linear-gradient(160deg, #0c2b1e 0%, #14532d 55%, #1f6b3d 100%); }
-[data-theme="night"], [data-theme="gradient-midnight"] { --card:rgba(29,35,46,.78); --accent:#8ab4f8; --accent2:#f0b429; --text:#e6e9ef; --muted:#97a1b0; --ok:#34d399;
+[data-theme="night"], [data-theme="gradient-midnight"] { --card:rgba(29,35,46,.78); --accent:#8ab4f8; --accent2:#f0b429; --text:#e6e9ef; --muted:#97a1b0; --ok:#34d399; --bg-color:#0f1115;
   --body-bg: radial-gradient(1000px 600px at 88% -12%, rgba(138,180,248,.14), transparent 60%), radial-gradient(800px 700px at -10% 112%, rgba(240,180,41,.10), transparent 60%), linear-gradient(165deg, #0f1115 0%, #161a22 60%, #1e2634 100%); }
-[data-theme="pastell"], [data-theme="gradient-ocean"] { --card:rgba(255,255,255,.85); --accent:#ec4899; --accent2:#8b5cf6; --text:#3b1d33; --muted:#a36a8f; --ok:#16a34a;
+[data-theme="pastell"] { --card:rgba(255,255,255,.85); --accent:#ec4899; --accent2:#8b5cf6; --text:#3b1d33; --muted:#a36a8f; --ok:#16a34a; --bg-color:#fdf2f8;
   --body-bg: radial-gradient(1000px 620px at 90% -10%, rgba(236,72,153,.20), transparent 60%), radial-gradient(900px 700px at -10% 112%, rgba(139,92,246,.18), transparent 62%), linear-gradient(160deg, #fdf2f8 0%, #fce7f3 55%, #f3e8ff 100%); }
-[data-theme="gradient-ocean"] { --card:rgba(10,65,95,.72); --accent:#2193b0; --accent2:#6dd5ed; --text:#e8fbff; --muted:#a6dbe8; --ok:#22c55e;
-  --body-bg: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
-[data-theme="unsplash-stadium"] { --bg-image: url("https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=2400&q=85); --card:rgba(8,25,52,.78); --accent:#60a5fa; --accent2:#facc15; --text:#eff6ff; --muted:#b9cbe5; --ok:#4ade80; --body-bg:#0b2545; }
-[data-theme="unsplash-football"] { --bg-image: url("https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=2400&q=85); --card:rgba(8,42,31,.78); --accent:#4ade80; --accent2:#facc15; --text:#effff4; --muted:#b8d7c3; --ok:#22c55e; --body-bg:#073b2a; }
-[data-theme="unsplash-basketball"] { --bg-image: url("https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=2400&q=85); --card:rgba(39,20,8,.8); --accent:#fb923c; --accent2:#facc15; --text:#fff7ed; --muted:#e8c8aa; --ok:#4ade80; --body-bg:#3b1d0b; }
-[data-theme="unsplash-volleyball"] { --bg-image: url("https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=2400&q=85); --card:rgba(7,35,61,.8); --accent:#38bdf8; --accent2:#fbbf24; --text:#effaff; --muted:#b6d7e8; --ok:#4ade80; --body-bg:#082f49; }
-[data-theme="unsplash-running"] { --bg-image: url("https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=2400&q=85); --card:rgba(20,28,52,.8); --accent:#a78bfa; --accent2:#f472b6; --text:#f5f3ff; --muted:#c8c0df; --ok:#4ade80; --body-bg:#1e1b4b; }
-[data-theme="unsplash-crowd"] { --bg-image: url("https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=2400&q=85); --card:rgba(34,18,58,.8); --accent:#c084fc; --accent2:#f472b6; --text:#faf5ff; --muted:#d6c1e8; --ok:#4ade80; --body-bg:#2e1065; }
-[data-theme="unsplash-night"] { --bg-image: url("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=2400&q=85); --card:rgba(5,12,30,.82); --accent:#60a5fa; --accent2:#22d3ee; --text:#eff6ff; --muted:#a9bddc; --ok:#34d399; --body-bg:#020617; }
-[data-theme="unsplash-arena"] { --bg-image: url("https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=2400&q=85); --card:rgba(45,17,12,.8); --accent:#fb7185; --accent2:#fb923c; --text:#fff7ed; --muted:#e5b9a9; --ok:#4ade80; --body-bg:#431407; }
-[data-theme="unsplash-field"] { --bg-image: url("https://images.unsplash.com/photo-1579952363873-27f3b2af8647?auto=format&fit=crop&w=2400&q=85); --card:rgba(7,43,35,.8); --accent:#34d399; --accent2:#fde047; --text:#ecfdf5; --muted:#b2d8c9; --ok:#22c55e; --body-bg:#064e3b; }
-[data-theme="unsplash-neon"] { --bg-image: url("https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=2400&q=85); --card:rgba(24,12,48,.82); --accent:#e879f9; --accent2:#818cf8; --text:#fdf4ff; --muted:#d8c2e8; --ok:#4ade80; --body-bg:#2e1065; }
+[data-theme="gradient-ocean"] { --card:rgba(10,65,95,.72); --accent:#2193b0; --accent2:#6dd5ed; --text:#e8fbff; --muted:#a6dbe8; --ok:#22c55e; --bg-color:#0a415f;
+  --body-bg: linear-gradient(135deg, #0a4a66 0%, #2193b0 60%, #6dd5ed 100%); }
 
-body { font-family: var(--font); background-color: var(--body-bg); background-image: linear-gradient(rgba(2,6,23,.42), rgba(2,6,23,.68)), var(--bg-image), var(--body-bg); background-attachment: fixed; color: var(--text); min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center; background-size: cover; background-position: center; }
+/* Sport-Themes: rein lokal, mehrlagige Verlaeufe */
+[data-theme="unsplash-stadium"] { --card:rgba(8,25,52,.78); --accent:#60a5fa; --accent2:#facc15; --text:#eff6ff; --muted:#b9cbe5; --ok:#4ade80; --bg-color:#0a1f40;
+  --body-bg: radial-gradient(ellipse 50% 36% at 14% -6%, rgba(255,250,220,.34), transparent 66%), radial-gradient(ellipse 50% 36% at 86% -6%, rgba(255,250,220,.26), transparent 66%), repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 70px, transparent 70px 140px), linear-gradient(180deg, #0a1f40 0%, #0b2d4f 50%, #0d4a32 100%); }
+[data-theme="unsplash-football"] { --card:rgba(8,42,31,.78); --accent:#4ade80; --accent2:#facc15; --text:#effff4; --muted:#b8d7c3; --ok:#22c55e; --bg-color:#052e1c;
+  --body-bg: radial-gradient(ellipse 70% 40% at 50% -10%, rgba(190,255,200,.22), transparent 66%), repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 90px, transparent 90px 180px), linear-gradient(180deg, #052e1c 0%, #0b4a2b 55%, #136b3a 100%); }
+[data-theme="unsplash-basketball"] { --card:rgba(39,20,8,.8); --accent:#fb923c; --accent2:#facc15; --text:#fff7ed; --muted:#e8c8aa; --ok:#4ade80; --bg-color:#2a1206;
+  --body-bg: radial-gradient(ellipse 60% 40% at 80% -8%, rgba(251,146,60,.35), transparent 66%), radial-gradient(ellipse 50% 40% at 0% 110%, rgba(250,204,21,.16), transparent 66%), repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 60px, transparent 60px 120px), linear-gradient(170deg, #2a1206 0%, #5a2410 55%, #7c2d12 100%); }
+[data-theme="unsplash-volleyball"] { --card:rgba(7,35,61,.8); --accent:#38bdf8; --accent2:#fbbf24; --text:#effaff; --muted:#b6d7e8; --ok:#4ade80; --bg-color:#062a45;
+  --body-bg: radial-gradient(ellipse 60% 36% at 85% -6%, rgba(125,211,252,.30), transparent 66%), radial-gradient(ellipse 80% 30% at 50% 112%, rgba(251,191,36,.26), transparent 66%), linear-gradient(180deg, #062a45 0%, #0a4c7a 60%, #0e6ba8 100%); }
+[data-theme="unsplash-running"] { --card:rgba(20,28,52,.8); --accent:#a78bfa; --accent2:#f472b6; --text:#f5f3ff; --muted:#c8c0df; --ok:#4ade80; --bg-color:#17163a;
+  --body-bg: radial-gradient(ellipse 60% 40% at 15% -8%, rgba(167,139,250,.32), transparent 66%), repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 3px, transparent 3px 56px), linear-gradient(170deg, #17163a 0%, #2e1f6b 55%, #4c1d95 100%); }
+[data-theme="unsplash-crowd"] { --card:rgba(34,18,58,.8); --accent:#c084fc; --accent2:#f472b6; --text:#faf5ff; --muted:#d6c1e8; --ok:#4ade80; --bg-color:#2e1065;
+  --body-bg: radial-gradient(ellipse 40% 30% at 20% 0%, rgba(244,114,182,.30), transparent 66%), radial-gradient(ellipse 40% 30% at 80% 0%, rgba(192,132,252,.30), transparent 66%), radial-gradient(ellipse 90% 40% at 50% 115%, rgba(244,114,182,.20), transparent 66%), linear-gradient(180deg, #1e0b45 0%, #2e1065 60%, #4a1a7a 100%); }
+[data-theme="unsplash-night"] { --card:rgba(5,12,30,.82); --accent:#60a5fa; --accent2:#22d3ee; --text:#eff6ff; --muted:#a9bddc; --ok:#34d399; --bg-color:#020617;
+  --body-bg: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(34,211,238,.20), transparent 66%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(96,165,250,.16), transparent 66%), linear-gradient(180deg, #020617 0%, #07142e 60%, #0b1f44 100%); }
+[data-theme="unsplash-arena"] { --card:rgba(45,17,12,.8); --accent:#fb7185; --accent2:#fb923c; --text:#fff7ed; --muted:#e5b9a9; --ok:#4ade80; --bg-color:#2a0d08;
+  --body-bg: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(251,146,60,.34), transparent 66%), radial-gradient(ellipse 50% 40% at 0% 100%, rgba(251,113,133,.20), transparent 66%), linear-gradient(180deg, #2a0d08 0%, #4a1710 60%, #6b2314 100%); }
+[data-theme="unsplash-field"] { --card:rgba(7,43,35,.8); --accent:#34d399; --accent2:#fde047; --text:#ecfdf5; --muted:#b2d8c9; --ok:#22c55e; --bg-color:#053b2e;
+  --body-bg: radial-gradient(ellipse 60% 36% at 20% -8%, rgba(253,224,71,.20), transparent 66%), repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 80px, transparent 80px 160px), linear-gradient(180deg, #053b2e 0%, #065f46 60%, #0a7a5a 100%); }
+[data-theme="unsplash-neon"] { --card:rgba(24,12,48,.82); --accent:#e879f9; --accent2:#818cf8; --text:#fdf4ff; --muted:#d8c2e8; --ok:#4ade80; --bg-color:#1a0b3d;
+  --body-bg: radial-gradient(ellipse 50% 40% at 15% 0%, rgba(232,121,249,.34), transparent 66%), radial-gradient(ellipse 50% 40% at 90% 100%, rgba(129,140,248,.30), transparent 66%), linear-gradient(170deg, #1a0b3d 0%, #2e1065 60%, #3b1a85 100%); }
+
+body { font-family: var(--font); background-color: var(--bg-color); background-image: var(--body-bg); background-attachment: fixed; background-size: cover; background-position: center; color: var(--text); min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; }
 #appView, #loginView { width: 100%; }
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; opacity: .5; pointer-events: none;
   background-image: repeating-linear-gradient(0deg, transparent 0 90px, rgba(255,255,255,.025) 90px 92px),

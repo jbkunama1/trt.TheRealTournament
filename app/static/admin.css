@@ -1,0 +1,82 @@
+/* Admin-UI v2: Tabs, Unter-Tabs, Karten, Theme-Kacheln */
+.admin-app { --panel: rgba(8,16,34,.74); --line: rgba(255,255,255,.12); }
+
+.admin-app .topbar { position: sticky; top: .6rem; z-index: 20; display: flex; align-items: center; gap: .8rem; flex-wrap: nowrap;
+  width: min(1180px, calc(100% - 1.5rem)); margin: .6rem auto 0; padding: .5rem .8rem; border-radius: 16px;
+  background: rgba(6,12,28,.8); border: 1px solid var(--line); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+.admin-app .brand { font-size: 1.1rem; padding: .3rem .4rem; white-space: nowrap; }
+.admin-app nav { display: flex; flex: 1; gap: .25rem; flex-wrap: nowrap; overflow-x: auto; padding: 0; background: none; scrollbar-width: none; }
+.admin-app nav::-webkit-scrollbar { display: none; }
+.admin-app .tab { white-space: nowrap; border-radius: 10px; padding: .55rem .9rem; font-size: .92rem; color: var(--muted); background: transparent; }
+.admin-app .tab:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.admin-app .tab.active { background: linear-gradient(120deg, var(--accent), var(--accent2)); color: #0b1220; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.admin-app .head-right { margin-left: 0; gap: .4rem; flex-wrap: nowrap; }
+.admin-app .head-right .btn { padding: .4rem .7rem; font-size: .8rem; white-space: nowrap; }
+.admin-app .me { white-space: nowrap; padding-right: .3rem; }
+
+.admin-app main { width: min(1180px, calc(100% - 1.5rem)); margin: 1.2rem auto 0; padding: 0; }
+.admin-app .tabpane { animation: trtFade .18s ease-out; }
+@keyframes trtFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.admin-app .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.admin-app .page-head h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); letter-spacing: -.02em; margin: 0; }
+.admin-app .page-head .hint, .admin-app .page-head .actions { margin: .2rem 0 0; }
+
+.admin-app .card { background: var(--panel); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.22); }
+.admin-app .form-card { margin-bottom: 1rem; padding: 1.1rem 1.25rem; }
+.admin-app .cards { gap: .9rem; margin-top: .8rem; }
+
+details.collapsible > summary { cursor: pointer; font-weight: 800; font-size: 1.02rem; list-style: none; display: flex; align-items: center; gap: .5rem; }
+details.collapsible > summary::-webkit-details-marker { display: none; }
+details.collapsible > summary::after { content: "\25BE"; margin-left: auto; color: var(--muted); transition: transform .15s; }
+details.collapsible[open] > summary::after { transform: rotate(180deg); }
+details.collapsible[open] > summary { margin-bottom: .9rem; padding-bottom: .7rem; border-bottom: 1px solid var(--line); }
+
+.admin-app .tcard { min-height: 130px; }
+.admin-app .tcard h3 { font-size: 1.08rem; padding-right: 5.5rem; }
+
+.subtabs { display: flex; gap: .2rem; margin: 1rem 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.subtabs::-webkit-scrollbar { display: none; }
+.subtab { background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 700; font-size: .95rem; padding: .65rem 1rem; cursor: pointer; white-space: nowrap; margin-bottom: -1px; }
+.subtab:hover { color: var(--text); }
+.subtab.active { color: var(--text); border-bottom-color: var(--accent2); }
+
+.tour-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.tour-head h2 { margin: .3rem 0 0; font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.chip { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .7rem; border-radius: 999px; background: rgba(255,255,255,.09); border: 1px solid var(--line); font-size: .83rem; color: var(--text); }
+.chip.accent { background: var(--accent2); color: #0b1220; border-color: transparent; font-weight: 800; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .7rem; margin: 1rem 0; }
+.stat { padding: .9rem 1rem; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.stat b { display: block; font-size: 1.7rem; line-height: 1.1; }
+.stat span { color: var(--muted); font-size: .82rem; }
+
+.admin-app .actions { margin: .7rem 0; gap: .5rem; }
+.admin-app .btn { border-radius: 10px; }
+.admin-app .btn.primary, .admin-app .btn.ok { color: #0b1220; }
+.admin-app input, .admin-app select { background: rgba(0,0,0,.28); border-color: var(--line); }
+.admin-app input:focus, .admin-app select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.admin-app th { background: rgba(255,255,255,.12); color: var(--text); }
+.admin-app table { background: var(--panel); border: 1px solid var(--line); }
+.admin-app .match { background: var(--panel); border-color: var(--line); }
+
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .8rem; margin: .8rem 0 1rem; }
+.swatch { height: 92px; border-radius: 14px; border: 2px solid transparent; padding: .55rem .7rem; display: flex; align-items: flex-end; text-align: left;
+  color: #fff; font-weight: 800; font-size: .88rem; cursor: pointer; background-color: var(--bg-color); background-image: var(--body-bg); background-size: cover;
+  text-shadow: 0 1px 6px rgba(0,0,0,.65); box-shadow: 0 6px 18px rgba(0,0,0,.3); transition: transform .15s, border-color .15s; }
+.swatch:hover { transform: translateY(-2px); }
+.swatch.active { border-color: #fff; box-shadow: 0 0 0 3px var(--accent), 0 8px 22px rgba(0,0,0,.4); }
+.design-select { display: none; }
+
+@media (max-width: 860px) {
+  .admin-app .topbar { flex-wrap: wrap; }
+  .admin-app nav { order: 3; flex: 1 1 100%; }
+  .admin-app .head-right { margin-left: auto; }
+}
+@media (max-width: 640px) {
+  .admin-app .match { grid-template-columns: 1fr; }
+  .admin-app .cal-item { grid-template-columns: 1fr; }
+  .admin-app .me { display: none; }
+}
